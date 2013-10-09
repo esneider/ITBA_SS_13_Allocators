@@ -26,5 +26,19 @@ void *malloc(size_t size);
  */
 void free(void *mem);
 
+/**
+ * Mesures the heap fragmentation.
+ *
+ * @returns fragmentation = 1 - larger free block / total free memory
+ */
+double fragmentation(void);
+
+/**
+ * Mesures the ratio of metadata memory vs total memory.
+ *
+ * @returns the relative metadata memory size.
+ */
+double metadata(void);
+
 
 #endif /* __ALLOCATOR_H__ */
