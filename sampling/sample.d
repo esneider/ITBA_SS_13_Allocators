@@ -1,6 +1,9 @@
 #!/usr/sbin/dtrace -s
 
-/* Usage: sudo ./ram.d -c application */
+/* Usage: sudo ./sample.d -o output.txt -c application */
+
+#pragma D option quiet
+
 
 dtrace:::BEGIN {
     self->start = timestamp;
@@ -25,13 +28,21 @@ pid$target::realloc:entry {
 }
 
 dtrace:::END {
-    printf("ms since start: %llu\n", (unsigned long long)(timestamp - self->start) / 1000000ll);
-    printf("total allocated memory: ");
-    printa("%@u\n", @memory);
-    printf("total mallocs: ");
-    printa("%@u\n", @allocs);
-    printf("malloc size histogram:\n");
-    /* printa("\t%6u -> %@u\n", @size); */
+
+    printf("{\n");
+
+    printf("    \"elapsed-ms\": %llu,\n", (unsigned long long)(timestamp - self->start) / 1000000ll);
+
+    printf("    \"total-mallocs\": ");
+    printa("%@u,\n", @allocs);
+
+    printf("    \"total-memory\": ");
+    printa("%@u,\n", @memory);
+
+    printf("    \"size-hist\": {\n");
+    printa("%@u", @size);
+
+    printf("    }\n}\n");
 }
 
 /* pid$target::malloc:entry { */
