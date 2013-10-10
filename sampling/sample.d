@@ -81,17 +81,15 @@ dtrace:::END {
 
     printf("    \"total-time\": %u,\n", MS_SINCE(self->start));
 
-    printf("    \"total-memory\": %u,\n", @total_memory);
+    printa("    \"total-memory\": %@u,\n", @total_memory);
 
-    printf("    \"num-allocs-total\": ");
-    printa("%@u,\n", @num_allocs);
+    printa("    \"num-allocs-total\": %@u,\n", @num_allocs);
 
     printf("    \"num-allocs-per-size\": {\n");
     printa("        \"%u\": %@u,\n", @allocs_per_size);
     printf("    },\n");
 
-    printf("    \"num-frees-total\": ");
-    printa("%@u,\n", @num_frees);
+    printa("    \"num-frees-total\": %@u,\n", @num_frees);
 
     printf("    \"num-frees-per-size\": {\n");
     printa("        \"%u\": %@u,\n", @frees_per_size);
