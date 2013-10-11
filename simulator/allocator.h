@@ -9,7 +9,7 @@
  *
  * @param size - Size of the heap.
  */
-void init(size_t size);
+void alloc_init(size_t size);
 
 /**
  * Request a block of memory.
@@ -17,28 +17,28 @@ void init(size_t size);
  * @param size - Minimum size of the block.
  * @returns a pointer to the start of the block.
  */
-void *malloc(size_t size);
+void *alloc_malloc(size_t size);
 
 /**
  * Return a block of memory.
  *
  * @param mem - pointer to the start of the block.
  */
-void free(void *mem);
+void alloc_free(void *mem);
 
 /**
  * Mesures the heap fragmentation.
  *
  * @returns fragmentation = 1 - larger free block / total free memory
  */
-double fragmentation(void);
+double alloc_fragmentation(void);
 
 /**
  * Mesures the ratio of metadata memory vs total memory.
  *
  * @returns the relative metadata memory size.
  */
-double metadata(void);
+double alloc_metadata(void);
 
 
 #endif /* __ALLOCATOR_H__ */
