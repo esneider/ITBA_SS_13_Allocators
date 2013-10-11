@@ -85,17 +85,17 @@ dtrace:::END {
 
     printa("    \"num-allocs-total\": %@u,\n", @num_allocs);
 
-    printf("    \"num-allocs-per-size\": {\n");
-    printa("        \"%u\": %@u,\n", @allocs_per_size);
-    printf("    },\n");
+    printf("    \"num-allocs-per-size\": [\n");
+    printa("        [%u, %@u],\n", @allocs_per_size);
+    printf("    ],\n");
 
     printa("    \"num-frees-total\": %@u,\n", @num_frees);
 
-    printf("    \"num-frees-per-size\": {\n");
-    printa("        \"%u\": %@u,\n", @frees_per_size);
-    printf("    },\n");
+    printf("    \"num-frees-per-size\": [\n");
+    printa("        [%u, %@u],\n", @frees_per_size);
+    printf("    ],\n");
 
-    printf("    \"num-allocs_per_size_per_time\": [\n");
+    printf("    \"num-allocs-per-size-per-time\": [\n");
     printa("        [%u, %u, %@u],\n", @allocs_per_size_per_time);
     printf("    ],\n");
 
