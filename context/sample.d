@@ -18,7 +18,7 @@ long long time_factor;
     x = (x + 1) >> 1
 
 
-#define MS_SINCE(x) ((timestamp - x) / 1000000ll)
+#define US_SINCE(x) ((timestamp - x) / 1000ll)
 
 
 dtrace:::BEGIN {
@@ -64,22 +64,22 @@ pid$target::free:entry /arg0/ {
     @num_frees = count();
 
     this->size = self->alloc_size[arg0];
-    this->time = MS_SINCE(self->alloc_time[arg0]);
+    this->life = US_SINCE(self->alloc_time[arg0]);
 
     self->alloc_size[arg0] = 0;
     self->alloc_time[arg0] = 0;
 
-    POW_2(this->time);
+    POW_2(this->life);
 
     @frees_per_size[this->size] = count();
-    @allocs_per_size_per_time[this->size, this->time] = count();
+    @allocs_per_size_per_life[this->size, this->life] = count();
 }
 
 dtrace:::END {
 
     printf("{\n");
 
-    printf("    \"total-time\": %u,\n", MS_SINCE(self->start));
+    printf("    \"total-time\": %u,\n", US_SINCE(self->start));
 
     printa("    \"total-memory\": %@u,\n", @total_memory);
 
@@ -95,8 +95,8 @@ dtrace:::END {
     printa("        [%u, %@u],\n", @frees_per_size);
     printf("    ],\n");
 
-    printf("    \"num-allocs-per-size-per-time\": [\n");
-    printa("        [%u, %u, %@u],\n", @allocs_per_size_per_time);
+    printf("    \"num-allocs-per-size-per-life\": [\n");
+    printa("        [%u, %u, %@u],\n", @allocs_per_size_per_life);
     printf("    ],\n");
 
     printf("}\n");

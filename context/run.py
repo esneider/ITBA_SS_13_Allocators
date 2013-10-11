@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -9,6 +10,7 @@ import json
 import re
 import numpy
 import pylab
+from matplotlib.ticker import FuncFormatter
 
 
 HIST_SIZE = 32
@@ -16,7 +18,7 @@ HIST_SIZE = 32
 
 def usage():
 
-    print 'usage: run.py -c <context-name> -a <application>'
+    print 'usage: run.py -c <context-name> -a <application> [-s]'
     sys.exit(2)
 
 def error():
@@ -27,16 +29,14 @@ def error():
 def parse_args(argv):
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'a:c:', ['app=', 'context='])
+        opts, args = getopt.getopt(sys.argv[1:], 'a:c:s')
+        opts.sort()
     except getopt.GetoptError:
         usage()
-    if len(opts) < 2 or args:
+    if args or len(opts) < 2 or opts[1][0] != '-c':
         usage()
 
-    if opts[0][0] in ['-c', '--context']:
-        opts.reverse()
-
-    return opts[0][1], opts[1][1]
+    return opts[0][1], opts[1][1], len(opts) == 3
 
 def load_data(app):
 
@@ -76,7 +76,28 @@ def total_allocs(data):
     sizes = data['num-allocs-per-size']
     return allocs - dict(sizes).get(0, 0)
 
-def E_size(data):
+def mjrFormatter(x, pos):
+
+    if x == HIST_SIZE - 1:
+        return "$\infty$"
+
+    return "$2^{{{0}}}$".format(int(x))
+
+def plot_E_size(E_size, context, show):
+
+    pylab.figure()
+    pylab.bar(range(HIST_SIZE / 2), E_size[:HIST_SIZE / 2], align='center')
+    pylab.gca().xaxis.set_major_formatter(FuncFormatter(mjrFormatter))
+    pylab.gca().set_xlim([-1, HIST_SIZE / 2])
+
+    pylab.title(u'Histograma de mallocs por tamaño')
+    pylab.xlabel(u'Tamaño en bytes')
+
+    pylab.savefig(context + '_size.png', bbox_inches='tight')
+
+    if show: pylab.show()
+
+def E_size(data, context, show):
 
     abs_size = data['num-allocs-per-size']
     allocs = total_allocs(data)
@@ -86,39 +107,90 @@ def E_size(data):
         if size:
             rel_size[log2(size)] = float(num) / allocs
 
+    plot_E_size(rel_size, context, show)
+
     return rel_size
 
 def E_malloc(data):
 
     allocs = total_allocs(data)
-    allocs_per_ms = float(allocs) / data['total-time']
-    return allocs_per_ms * 1000
+    allocs_per_us = float(allocs) / data['total-time']
+    return allocs_per_us * 1000000
 
-def E_life(data):
+def plot_E_life(E_life, context, show):
 
-    abs_time_per_size = data['num-allocs-per-size-per-time']
-    rel_time_per_size = [[0] * HIST_SIZE] * HIST_SIZE
+    pylab.figure()
+    pylab.imshow(E_life[:HIST_SIZE / 2], interpolation='nearest', origin='lower')
+    pylab.colorbar(fraction=0.02, ticks=[])
 
-    for size, time, num in abs_time_per_size:
+    axes = pylab.gca()
+    axes.yaxis.set_major_formatter(FuncFormatter(mjrFormatter))
+    axes.xaxis.set_major_formatter(FuncFormatter(mjrFormatter))
+
+    ticks = [5 * x for x in range((HIST_SIZE-2) / 5)] + [HIST_SIZE - 1]
+    axes.set_xticks(ticks)
+
+    pylab.title(u'Histograma de mallocs por tamaño, por tiempo de vida')
+    pylab.xlabel(u'Tiempo de vida en µs')
+    pylab.ylabel(u'Tamaño en bytes')
+
+    pylab.savefig(context + '_life.png', bbox_inches='tight')
+
+    if show: pylab.show()
+
+def E_life(data, context, show):
+
+    abs_life_per_size = data['num-allocs-per-size-per-life']
+    rel_life_per_size = [[0] * HIST_SIZE for row in range(HIST_SIZE)]
+
+    for size, life, num in abs_life_per_size:
         if size:
-            rel_time_per_size[log2(size)][log2(time)] = num
+            rel_life_per_size[log2(size)][log2(life)] = num
+
+    num_allocs = dict(data['num-allocs-per-size'])
+    num_frees = dict(data['num-frees-per-size'])
 
     for size in range(HIST_SIZE):
-        allocs = float(sum(rel_time_per_size[size]))
-        if allocs:
-            rel = [x / allocs for x in rel_time_per_size[size]]
-            rel_time_per_size[size] = rel
+        rel_life_per_size[size][HIST_SIZE - 1] = \
+            num_allocs.get(2**size, 0) - num_frees.get(2**size, 0)
 
-    return rel_time_per_size
+    plot_E_life(rel_life_per_size, context, show)
+
+    for size in range(HIST_SIZE):
+        allocs = float(sum(rel_life_per_size[size]))
+        if allocs:
+            rel = [x / allocs for x in rel_life_per_size[size]]
+            rel_life_per_size[size] = rel
+
+    return rel_life_per_size
+
+def vec2line(vec):
+
+    return ' '.join(['%.8f' % n for n in vec])
+
+def save_data(data, context):
+
+    f = open(context + '.json', 'w')
+    json.dump(data, f, indent=2)
+    f.close()
+
+    f = open(context + '.txt', 'w')
+    f.write('{}\n'.format(HIST_SIZE))
+    f.write(vec2line(data['E_size']) + '\n')
+    f.write('%.8f\n' % data['E_malloc'])
+    f.write('\n'.join([vec2line(row) for row in data['E_life']]))
+    f.close()
 
 
 if __name__ == "__main__":
 
-    app, context = parse_args(sys.argv[1:])
+    app, context, show = parse_args(sys.argv[1:])
     data = load_data(app)
 
     ret = {
-        'E_size': E_size(data),
+        'E_size': E_size(data, context, show),
         'E_malloc': E_malloc(data),
-        'E_life': E_life(data),
+        'E_life': E_life(data, context, show),
     }
+
+    save_data(ret, context)
