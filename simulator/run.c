@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "run.h"
 #include "context.h"
 #include "simulator.h"
 
@@ -39,7 +40,7 @@ static struct params parse_args(int argc, char **argv) {
 
             mask |= 4;
 
-            if (sscanf(argv[i + 1], "%d%c", &params.time, &mask) != 1) {
+            if (sscanf(argv[i + 1], "%f%c", &params.time, &mask) != 1) {
                 usage();
             }
         }
@@ -55,5 +56,8 @@ int main(int argc, char **argv) {
 
     struct params params = parse_args(argc - 1, argv + 1);
     struct context *context = load_context(params.context);
-    struct simulation *simulation = simulate(&params, context);
+    struct simulation *simulation = load_simulation(&params, context);
+
+    free_simulation(simulation);
+    free_context(context);
 }

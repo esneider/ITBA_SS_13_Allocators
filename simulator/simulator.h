@@ -3,21 +3,27 @@
 
 #include <stddef.h>
 #include "context.h"
+#include "run.h"
 
 
-struct params {
-    char *context;
-    size_t heap_size;
-    size_t time;
+struct event {
+    double time;
+    size_t size;
+    void *mem;
+    enum {MALLOC, FREE} type;
+    struct event *alternate;
 };
 
 
 struct simulation {
-    // TODO
+    size_t num_events;
+    struct event *events;
 };
 
 
-struct simulation *simulate(struct params *params, struct context *context);
+struct simulation *load_simulation(struct params *params, struct context *context);
+
+void free_simulation(struct simulation *simulation);
 
 
 #endif /* __SIMULATOR_H__ */

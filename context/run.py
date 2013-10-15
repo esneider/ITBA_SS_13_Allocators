@@ -113,9 +113,20 @@ def E_size(data, context, show):
 
 def E_malloc(data):
 
-    allocs = total_allocs(data)
-    allocs_per_us = float(allocs) / data['total-time']
-    return allocs_per_us * 1000000
+    allocs_per_ms = data['num-allocs-per-ms']
+    allocs_per_ms.sort()
+    allocs_per_ms = [log2(y) for x, y in allocs_per_ms]
+
+    markov = [[0] * HIST_SIZE for x in HIST_SIZE]
+
+    for pos in range(len(allocs_per_ms) - 1):
+        markov[allocs_per_ms[pos]][allocs_per_ms[pos + 1]] += 1
+
+    for row in range(HIST_SIZE):
+        s = float(sum(markov[row]))
+        markov[row] = [allocs / s for allocs in markov[row]]
+
+    return markov
 
 def plot_E_life(E_life, context, show):
 
@@ -177,7 +188,7 @@ def save_data(data, context):
     f = open(context + '.txt', 'w')
     f.write('{}\n'.format(HIST_SIZE))
     f.write(vec2line(data['E_size']) + '\n')
-    f.write('%.8f\n' % data['E_malloc'])
+    f.write('\n'.join([vec2line(row) for row in data['E_malloc']]))
     f.write('\n'.join([vec2line(row) for row in data['E_life']]))
     f.close()
 

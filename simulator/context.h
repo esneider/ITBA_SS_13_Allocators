@@ -8,7 +8,7 @@ struct context {
     size_t num_buckets;
     double *size_hist;
     double **life_hist;
-    double mallocs_per_sec;
+    double **allocs_markov;
 };
 
 

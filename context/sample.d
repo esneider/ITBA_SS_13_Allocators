@@ -6,7 +6,8 @@
 #pragma D option dynvarsize=100m
 
 
-long long time_factor;
+/* Bucket size, in us */
+long long time_bucket;
 
 
 #define POW_2(x)  \
@@ -23,25 +24,32 @@ long long time_factor;
 
 dtrace:::BEGIN {
 
+    time_bucket = 1000;
     self->start = timestamp;
 }
 
 pid$target::malloc:entry {
 
     self->size = arg0;
-    self->trace = 1;
 }
 
 pid$target::calloc:entry {
 
     self->size = arg0 * arg1;
-    self->trace = 1;
 }
 
 pid$target::realloc:entry {
 
     self->size = arg1;
+}
+
+pid$target::malloc:entry,
+pid$target::calloc:entry,
+pid$target::realloc:entry {
+
     self->trace = 1;
+
+    @allocs_per_ms[US_SINCE(self->start) / time_bucket] = count();
 }
 
 pid$target::malloc:return,
@@ -79,8 +87,6 @@ dtrace:::END {
 
     printf("{\n");
 
-    printf("    \"total-time\": %u,\n", US_SINCE(self->start));
-
     printa("    \"total-memory\": %@u,\n", @total_memory);
 
     printa("    \"num-allocs-total\": %@u,\n", @num_allocs);
@@ -97,6 +103,10 @@ dtrace:::END {
 
     printf("    \"num-allocs-per-size-per-life\": [\n");
     printa("        [%u, %u, %@u],\n", @allocs_per_size_per_life);
+    printf("    ],\n");
+
+    printf("    \"num-allocs-per-ms\": [\n");
+    printa("        [%u, %@u],\n", @allocs_per_ms);
     printf("    ],\n");
 
     printf("}\n");
