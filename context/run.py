@@ -117,14 +117,15 @@ def E_malloc(data):
     allocs_per_ms.sort()
     allocs_per_ms = [log2(y) for x, y in allocs_per_ms]
 
-    markov = [[0] * HIST_SIZE for x in HIST_SIZE]
+    markov = [[0] * HIST_SIZE for x in range(HIST_SIZE)]
 
     for pos in range(len(allocs_per_ms) - 1):
         markov[allocs_per_ms[pos]][allocs_per_ms[pos + 1]] += 1
 
     for row in range(HIST_SIZE):
         s = float(sum(markov[row]))
-        markov[row] = [allocs / s for allocs in markov[row]]
+        if s:
+            markov[row] = [allocs / s for allocs in markov[row]]
 
     return markov
 

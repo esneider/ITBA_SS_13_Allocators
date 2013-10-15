@@ -32,15 +32,17 @@ static struct simulation *new_simulation(size_t num_events) {
 
 struct simulation *load_simulation(struct params *params, struct context *context) {
 
-    size_t num_mallocs = params->time * context->mallocs_per_sec;
-    struct simulation *simulation = new_simulation(num_mallocs * 2);
+    /* size_t num_mallocs = params->time * context->mallocs_per_sec; */
+    /* struct simulation *simulation = new_simulation(num_mallocs * 2); */
 
-    for (int i = 0; i < num_mallocs; i++) {
+    /* for (int i = 0; i < num_mallocs; i++) { */
 
         // TODO
-    }
+    /* } */
 
-    return simulation;
+    /* return simulation; */
+
+    return NULL;
 }
 
 
