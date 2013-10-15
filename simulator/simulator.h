@@ -18,6 +18,7 @@ struct event {
 struct simulation {
     size_t num_events;
     struct event *events;
+    size_t _cap_events;
 };
 
 

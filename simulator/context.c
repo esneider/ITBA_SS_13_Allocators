@@ -18,8 +18,8 @@ static struct context *new_context(size_t size) {
 
     context->num_buckets = size;
     context->size_hist = malloc(size * sizeof(double));
-    context->life_hist = calloc(size * sizeof(double*));
-    context->allocs_markov = calloc(size * sizeof(double*));
+    context->life_hist = calloc(size, sizeof(double*));
+    context->allocs_markov = calloc(size, sizeof(double*));
 
     if (!context->size_hist || !context->life_hist || !context->allocs_markov) {
 

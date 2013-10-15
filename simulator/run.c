@@ -8,7 +8,7 @@
 
 static void usage(void) {
 
-    printf("usage: run -c <context> -h <heap-size> -t <time>\n");
+    printf("usage: run -c <context-name> -h <heap-size-in-bytes> -t <time-in-ms>\n");
     exit(2);
 }
 
