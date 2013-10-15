@@ -188,8 +188,8 @@ def save_data(data, context):
     f.write('{}\n'.format(HIST_SIZE))
     f.write(vec2line(data['E_size']) + '\n')
     f.write('{}\n'.format(data['E_malloc'][0]))
-    f.write('\n'.join([vec2line(row) for row in data['E_malloc'][1]]))
-    f.write('\n'.join([vec2line(row) for row in data['E_life']]))
+    f.write('\n'.join([vec2line(row) for row in data['E_malloc'][1]]) + '\n')
+    f.write('\n'.join([vec2line(row) for row in data['E_life']]) + '\n')
     f.close()
 
 if __name__ == "__main__":

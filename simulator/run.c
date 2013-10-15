@@ -32,7 +32,7 @@ static struct params parse_args(int argc, char **argv) {
 
             mask |= 2;
 
-            if (sscanf(argv[i + 1], "%d%c", &params.heap_size, &mask) != 1) {
+            if (sscanf(argv[i + 1], "%zu%c", &params.heap_size, &mask) != 1) {
                 usage();
             }
 
@@ -40,7 +40,7 @@ static struct params parse_args(int argc, char **argv) {
 
             mask |= 4;
 
-            if (sscanf(argv[i + 1], "%f%c", &params.time, &mask) != 1) {
+            if (sscanf(argv[i + 1], "%zu%c", &params.time, &mask) != 1) {
                 usage();
             }
         }

@@ -7,7 +7,7 @@
 struct params {
     char *context;
     size_t heap_size;
-    double time;
+    size_t time;
 };
 
 
