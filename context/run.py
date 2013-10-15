@@ -12,9 +12,7 @@ import numpy
 import pylab
 from matplotlib.ticker import FuncFormatter
 
-
 HIST_SIZE = 32
-
 
 def usage():
 
@@ -127,7 +125,7 @@ def E_malloc(data):
         if s:
             markov[row] = [allocs / s for allocs in markov[row]]
 
-    return markov
+    return [allocs_per_ms[0], markov]
 
 def plot_E_life(E_life, context, show):
 
@@ -189,10 +187,10 @@ def save_data(data, context):
     f = open(context + '.txt', 'w')
     f.write('{}\n'.format(HIST_SIZE))
     f.write(vec2line(data['E_size']) + '\n')
-    f.write('\n'.join([vec2line(row) for row in data['E_malloc']]))
+    f.write('{}\n'.format(data['E_malloc'][0]))
+    f.write('\n'.join([vec2line(row) for row in data['E_malloc'][1]]))
     f.write('\n'.join([vec2line(row) for row in data['E_life']]))
     f.close()
-
 
 if __name__ == "__main__":
 

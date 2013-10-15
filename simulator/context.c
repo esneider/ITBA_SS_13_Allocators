@@ -58,6 +58,8 @@ struct context* load_context(const char *name) {
         fscanf(f, "%f", context->size_hist + i);
     }
 
+    fscanf(f, "%zu", &context->allocs_initial);
+
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             fscanf(f, "%f", context->allocs_markov[i] + j);
