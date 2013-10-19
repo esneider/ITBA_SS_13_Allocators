@@ -5,6 +5,7 @@
 #include "run.h"
 #include "context.h"
 #include "simulator.h"
+#include "debug.h"
 
 
 static void usage(void) {
@@ -58,8 +59,13 @@ int main(int argc, char **argv) {
     srand(time(NULL));
 
     struct params params = parse_args(argc - 1, argv + 1);
+    print_params(&params);
+
     struct context *context = load_context(params.context);
+    print_context(context);
+
     struct simulation *simulation = load_simulation(&params, context);
+    print_simulation(simulation);
 
     free_simulation(simulation);
     free_context(context);

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "simulator.h"
 #include "allocator.h"
+#include "debug.h"
 
 
 static void error(void) {
@@ -11,84 +12,80 @@ static void error(void) {
 }
 
 
-static struct event *new_event(struct simulation *simulation, struct context *context) {
+static struct event *new_events(struct simulation *simulation, struct context *context, size_t amount) {
 
-    simulation->num_events++;
+    size_t num = simulation->num_events + amount;
+    size_t cap = simulation->_cap_events;
 
-    if (simulation->num_events > simulation->_cap_events) {
+    for (; num > cap; cap = 2*cap + 1) ;
 
-        simulation->_cap_events = 2 * simulation->_cap_events + 1;
+    struct event *mem = realloc(simulation->events, cap * sizeof(struct event));
 
-        struct event *aux = realloc(simulation->events, simulation->_cap_events);
-
-        if (!aux) {
-
-            free_simulation(simulation);
-            free_context(context);
-            error();
-        }
-
-        simulation->events = aux;
-    }
-
-    return simulation->events + simulation->num_events - 1;
-}
-
-
-static int cmp(void *thunk, const void *a, const void *b) {
-
-    const size_t *_a = a;
-    const size_t *_b = b;
-
-    struct simulation *simulation = thunk;
-
-    return simulation->events[*_a].time - simulation->events[*_b].time;
-}
-
-
-static void sort_simulation(struct simulation *simulation, struct context *context) {
-
-    size_t *vec = malloc(sizeof(size_t) * simulation->num_events);
-
-    if (!vec) {
+    if (!mem) {
 
         free_simulation(simulation);
         free_context(context);
         error();
     }
 
-    for (size_t i = 0; i < simulation->num_events; i++) {
+    simulation->events = mem;
+    simulation->num_events = num;
+    simulation->_cap_events = cap;
 
-        vec[i] = i;
+    return simulation->events + num - amount;
+}
+
+
+static int cmp(void *thunk, const void *a, const void *b) {
+
+    const size_t *aa = a;
+    const size_t *bb = b;
+    const struct simulation *simulation = thunk;
+
+    double sub = simulation->events[*aa].time - simulation->events[*bb].time;
+
+    return (sub > 0) - (sub < 0);
+}
+
+
+static void sort_simulation(struct simulation *simulation, struct context *context) {
+
+    size_t *vec = malloc(sizeof(size_t) * simulation->num_events);
+    size_t *alt = malloc(sizeof(size_t) * simulation->num_events);
+
+    if (!vec || !alt) {
+
+        free(vec);
+        free(alt);
+        free_simulation(simulation);
+        free_context(context);
+        error();
     }
 
-    printf("event times:\n");
-    for (size_t i = 0; i < simulation->num_events; i++) {
-        printf("%f ", simulation->events[i].time);
-    }
-    printf("\n");
+    for (size_t i = 0; i < simulation->num_events; i++) vec[i] = i;
 
     qsort_r(vec, simulation->num_events, sizeof(size_t), simulation, cmp);
 
+    for (size_t i = 0; i < simulation->num_events; i++) alt[vec[i]] = i;
+
     for (size_t i = 0; i < simulation->num_events; i++) {
 
-        printf("--\n");
-        printf("%d\n", vec[i]); fflush(stdout);
-
+        /* swap events */
         struct event event = simulation->events[i];
-
-        printf("%zd\n", event.alternate - simulation->events);
-        event.alternate->alternate = &event;
-
-        printf("%d\n", vec[i]); fflush(stdout);
         simulation->events[i] = simulation->events[vec[i]];
-        simulation->events[i].alternate->alternate = simulation->events + i;
-
         simulation->events[vec[i]] = event;
-        simulation->events[vec[i]].alternate->alternate = simulation->events + vec[i];
+
+        /* fix alternates */
+        simulation->events[simulation->events[i].alternate].alternate = i;
+        simulation->events[simulation->events[vec[i]].alternate].alternate = vec[i];
+
+        /* fix vec & alt */
+        vec[alt[i]] = vec[i];
+        alt[vec[i]] = alt[i];
     }
 
     free(vec);
+    free(alt);
 }
 
 
@@ -106,10 +103,7 @@ static size_t hist_bucket(double *hist, struct context *context) {
 
         r -= hist[pos];
 
-        if (r <= 0) {
-
-            return pos;
-        }
+        if (r <= 0) return pos;
     }
 
     return context->num_buckets - 1;
@@ -131,33 +125,31 @@ struct simulation *load_simulation(struct params *params, struct context *contex
     for (size_t ms = 0; ms < params->time; ms++) {
 
         size_t num_allocs = log_rnd(markov_state);
+        struct event *event = new_events(simulation, context, num_allocs * 2);
 
         for (size_t alloc = 0; alloc < num_allocs; alloc++) {
 
             size_t block_size = hist_bucket(context->size_hist, context);
+            size_t final_size = log_rnd(block_size);
+            double start_time = ms + alloc / (double)num_allocs;
 
-            struct event *alloc_event = new_event(simulation, context);
+            event->mem = NULL;
+            event->type = MALLOC;
+            event->size = final_size;
+            event->time = start_time;
+            event->alternate = (event - simulation->events) + 1;
+            event++;
 
-            alloc_event->type = MALLOC;
-            alloc_event->alternate = (struct event*)simulation->num_events;
-            alloc_event->size = log_rnd(block_size);
-            alloc_event->time = ms + alloc / (double)num_allocs;
-
-            struct event *free_event = new_event(simulation, context);
-
-            free_event->type = FREE;
-            free_event->alternate = (struct event*)(simulation->num_events - 2);
-            free_event->size = alloc_event->size;
-            free_event->time = alloc_event->time;
-            free_event->time += log_rnd(hist_bucket(context->life_hist[block_size], context));
+            event->mem = NULL;
+            event->type = FREE;
+            event->size = final_size;
+            event->time = start_time;
+            event->time += log_rnd(hist_bucket(context->life_hist[block_size], context));
+            event->alternate = (event - simulation->events) - 1;
+            event++;
         }
 
         markov_state = hist_bucket(context->allocs_markov[markov_state], context);
-    }
-
-    for (size_t e = 0; e < simulation->num_events; e++) {
-
-        simulation->events[e].alternate = simulation->events + (size_t)simulation->events[e].alternate;
     }
 
     sort_simulation(simulation, context);

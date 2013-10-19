@@ -7,11 +7,11 @@
 
 
 struct event {
-    double time;
-    size_t size;
     void *mem;
     enum {MALLOC, FREE} type;
-    struct event *alternate;
+    size_t size;
+    double time;
+    size_t alternate;
 };
 
 
