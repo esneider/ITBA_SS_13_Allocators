@@ -155,7 +155,7 @@ void run_simulation(struct simulation *simulation) {
 
     if (!simulation->heap) error(simulation);
 
-    alloc_init(simulation->heap_size, heap);
+    alloc_init(simulation->heap_size, simulation->heap);
 
     struct timeval stop, start;
 

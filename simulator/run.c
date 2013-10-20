@@ -21,7 +21,7 @@ static size_t parse_args(struct simulation *simulation, int argc, char **argv) {
 
     size_t samples = 1;
     size_t mask = 0;
-    size_t args = argc - 1;
+    int args = argc - 1;
     char c;
 
     for (int i = 0; args && i < argc; i += 2, args -= 2) {
@@ -61,7 +61,7 @@ static size_t parse_args(struct simulation *simulation, int argc, char **argv) {
         }
     }
 
-    if (mask & 7 != 7 || args != -1) usage(simulation);
+    if ((mask & 7) != 7 || args != -1) usage(simulation);
 
     return samples;
 }
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 
     struct simulation *simulation = new_simulation();
     struct stats *stats = new_stats(simulation);
-    size_t samples = arse_args(simulation, argc - 1, argv + 1);
+    size_t samples = parse_args(simulation, argc - 1, argv + 1);
 
     srand(time(NULL));
     printf("Loading context...\n");
