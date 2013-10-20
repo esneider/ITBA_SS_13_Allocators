@@ -1,2 +1,2 @@
 ALL:
-	gcc -std=c99 -I. *.c -o run
+	gcc -std=c99 -Wall -Wextra -g -I. *.c -o run

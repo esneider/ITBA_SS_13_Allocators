@@ -2,21 +2,6 @@
 #include "debug.h"
 
 
-void print_params(struct params *params) {
-
-    printf(
-        "params = {\n"
-            "\tcontext = \"%s\"\n"
-            "\theap_size = %zu\n"
-            "\ttime = %zu\n"
-        "}\n",
-        params->context,
-        params->heap_size,
-        params->time
-    );
-}
-
-
 void print_context(struct context *context) {
 
     printf(
@@ -68,31 +53,40 @@ void print_event(struct event *event, size_t pos) {
 
     printf(
         "event %zd = {\n"
-            "\tmem = %p\n"
             "\ttype = %s\n"
             "\tsize = %zu\n"
             "\ttime = %.6lf\n"
+            "\taddress = %p\n"
             "\talternate = %zu\n"
         "}\n",
         pos,
-        event->mem,
         event->type ? "FREE" : "MALLOC",
         event->size,
         event->time,
+        event->address,
         event->alternate
     );
 }
 
 
-void print_simulation(struct simulation *simulation) {
+void print_simulation(struct simulation *simulation, bool events) {
 
     printf(
-        "simulation = { num_events = %zu }\n",
+        "simulation = {\n"
+            "\tcontext = \"%s\"\n"
+            "\theap_size = %zu\n"
+            "\ttime = %zu\n"
+            "\tnum_events = %zu\n"
+        "}\n",
+        simulation->context,
+        simulation->heap_size,
+        simulation->time,
         simulation->num_events
     );
 
-    for (size_t i = 0; i < simulation->num_events; i++) {
-
-        print_event(simulation->events + i, i);
+    if (events) {
+        for (size_t i = 0; i < simulation->num_events; i++) {
+            print_event(simulation->events + i, i);
+        }
     }
 }

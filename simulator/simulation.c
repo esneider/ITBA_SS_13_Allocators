@@ -1,32 +1,43 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "simulator.h"
+#include "simulation.h"
 #include "allocator.h"
-#include "debug.h"
+#include "talloc.h"
 
 
-static void error(void) {
+#define vrealloc(base, nel) trealloc((base), (nel) * sizeof(*(base)))
 
+
+static void error(struct simulation *simulation) {
+
+    tfree(simulation);
     printf("There was an error while loading simulation. Aborting.\n");
     exit(3);
 }
 
 
-static struct event *new_events(struct simulation *simulation, struct context *context, size_t amount) {
+struct simulation *new_simulation(void) {
+
+    struct simulation *simulation = tcalloc(sizeof(struct simulation), NULL);
+
+    if (!simulation) error(simulation);
+
+    simulation->events = talloc(0, simulation);
+
+    return simulation;
+}
+
+
+static struct event *new_events(struct simulation *simulation, size_t amount) {
 
     size_t num = simulation->num_events + amount;
     size_t cap = simulation->_cap_events;
 
     for (; num > cap; cap = 2*cap + 1) ;
 
-    struct event *mem = realloc(simulation->events, cap * sizeof(struct event));
+    struct event *mem = vrealloc(simulation->events, cap);
 
-    if (!mem) {
-
-        free_simulation(simulation);
-        free_context(context);
-        error();
-    }
+    if (!mem) error(simulation);
 
     simulation->events = mem;
     simulation->num_events = num;
@@ -48,19 +59,12 @@ static int cmp(void *thunk, const void *a, const void *b) {
 }
 
 
-static void sort_simulation(struct simulation *simulation, struct context *context) {
+static void sort_simulation(struct simulation *simulation) {
 
-    size_t *vec = malloc(sizeof(size_t) * simulation->num_events);
-    size_t *alt = malloc(sizeof(size_t) * simulation->num_events);
+    size_t *vec = talloc(sizeof(size_t) * simulation->num_events, simulation);
+    size_t *alt = talloc(sizeof(size_t) * simulation->num_events, simulation);
 
-    if (!vec || !alt) {
-
-        free(vec);
-        free(alt);
-        free_simulation(simulation);
-        free_context(context);
-        error();
-    }
+    if (!vec || !alt) error(simulation);
 
     for (size_t i = 0; i < simulation->num_events; i++) vec[i] = i;
 
@@ -84,8 +88,8 @@ static void sort_simulation(struct simulation *simulation, struct context *conte
         alt[vec[i]] = alt[i];
     }
 
-    free(vec);
-    free(alt);
+    tfree(vec);
+    tfree(alt);
 }
 
 
@@ -110,22 +114,14 @@ static size_t hist_bucket(double *hist, struct context *context) {
 }
 
 
-struct simulation *load_simulation(struct params *params, struct context *context) {
-
-    struct simulation *simulation = calloc(1, sizeof(*simulation));
-
-    if (!simulation) {
-
-        free_context(context);
-        error();
-    }
+void load_simulation(struct simulation *simulation, struct context *context) {
 
     size_t markov_state = context->allocs_initial;
 
-    for (size_t ms = 0; ms < params->time; ms++) {
+    for (size_t ms = 0; ms < simulation->time; ms++) {
 
         size_t num_allocs = log_rnd(markov_state);
-        struct event *event = new_events(simulation, context, num_allocs * 2);
+        struct event *event = new_events(simulation, num_allocs * 2);
 
         for (size_t alloc = 0; alloc < num_allocs; alloc++) {
 
@@ -133,18 +129,18 @@ struct simulation *load_simulation(struct params *params, struct context *contex
             size_t final_size = log_rnd(block_size);
             double start_time = ms + alloc / (double)num_allocs;
 
-            event->mem = NULL;
             event->type = MALLOC;
             event->size = final_size;
             event->time = start_time;
+            event->address = NULL;
             event->alternate = (event - simulation->events) + 1;
             event++;
 
-            event->mem = NULL;
             event->type = FREE;
             event->size = final_size;
             event->time = start_time;
             event->time += log_rnd(hist_bucket(context->life_hist[block_size], context));
+            event->address = NULL;
             event->alternate = (event - simulation->events) - 1;
             event++;
         }
@@ -152,17 +148,8 @@ struct simulation *load_simulation(struct params *params, struct context *contex
         markov_state = hist_bucket(context->allocs_markov[markov_state], context);
     }
 
-    sort_simulation(simulation, context);
+    sort_simulation(simulation);
 
-    return simulation;
-}
-
-
-void free_simulation(struct simulation *simulation) {
-
-    if (simulation) {
-
-        free(simulation->events);
-        free(simulation);
-    }
+    struct event *mem = vrealloc(simulation->events, simulation->num_events);
+    simulation->events = mem ? mem : simulation->events;
 }

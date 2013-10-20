@@ -2,18 +2,16 @@
 #define __DEBUG_H__
 
 #include <stddef.h>
-#include "run.h"
+#include <stdbool.h>
 #include "context.h"
-#include "simulator.h"
+#include "simulation.h"
 
-
-void print_params(struct params *params);
 
 void print_context(struct context *context);
 
 void print_event(struct event *event, size_t pos);
 
-void print_simulation(struct simulation *simulation);
+void print_simulation(struct simulation *simulation, bool events);
 
 
 #endif /* __DEBUG_H__ */

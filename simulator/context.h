@@ -13,9 +13,7 @@ struct context {
 };
 
 
-struct context* load_context(const char *name);
-
-void free_context(struct context *context);
+struct context* load_context(void *parent, const char *name);
 
 
 #endif /* __CONTEXT_H__ */

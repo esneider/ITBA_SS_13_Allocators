@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "run.h"
+#include "talloc.h"
 #include "context.h"
-#include "simulator.h"
+#include "simulation.h"
 #include "debug.h"
 
 
@@ -15,12 +15,12 @@ static void usage(void) {
 }
 
 
-static struct params parse_args(int argc, char **argv) {
+static void parse_args(struct simulation *simulation, int argc, char **argv) {
 
     if (argc != 6) usage();
 
-    struct params params;
     int mask = 0;
+    char c;
 
     for (int i = 0; i < 6; i += 2) {
 
@@ -28,13 +28,13 @@ static struct params parse_args(int argc, char **argv) {
 
             mask |= 1;
 
-            params.context = argv[i+1];
+            simulation->context = argv[i+1];
 
         } else if (!strcmp("-h", argv[i])) {
 
             mask |= 2;
 
-            if (sscanf(argv[i + 1], "%zu%c", &params.heap_size, &mask) != 1) {
+            if (sscanf(argv[i + 1], "%zu%c", &simulation->heap_size, &c) != 1) {
                 usage();
             }
 
@@ -42,15 +42,13 @@ static struct params parse_args(int argc, char **argv) {
 
             mask |= 4;
 
-            if (sscanf(argv[i + 1], "%zu%c", &params.time, &mask) != 1) {
+            if (sscanf(argv[i + 1], "%zu%c", &simulation->time, &c) != 1) {
                 usage();
             }
         }
     }
 
     if (mask != 7) usage();
-
-    return params;
 }
 
 
@@ -58,15 +56,16 @@ int main(int argc, char **argv) {
 
     srand(time(NULL));
 
-    struct params params = parse_args(argc - 1, argv + 1);
-    print_params(&params);
+    struct simulation *simulation = new_simulation();
 
-    struct context *context = load_context(params.context);
+    parse_args(simulation, argc - 1, argv + 1);
+
+    struct context *context = load_context(simulation, simulation->context);
+
+    load_simulation(simulation, context);
+
     print_context(context);
+    print_simulation(simulation, false);
 
-    struct simulation *simulation = load_simulation(&params, context);
-    print_simulation(simulation);
-
-    free_simulation(simulation);
-    free_context(context);
+    tfree(simulation);
 }
