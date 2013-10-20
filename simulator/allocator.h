@@ -8,8 +8,9 @@
  * Initialize the heap with a block of size bytes.
  *
  * @param size - Size of the heap.
+ * @param heap - Memory heap.
  */
-void alloc_init(size_t size);
+void alloc_init(size_t size, void *heap);
 
 /**
  * Request a block of memory.

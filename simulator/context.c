@@ -2,14 +2,7 @@
 #include <stdlib.h>
 #include "context.h"
 #include "talloc.h"
-
-
-static void error(void *parent) {
-
-    tfree(parent);
-    printf("There was an error while loading context. Aborting.\n");
-    exit(3);
-}
+#include "utils.h"
 
 
 static struct context *new_context(void *parent, size_t size) {

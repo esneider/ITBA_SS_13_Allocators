@@ -5,6 +5,7 @@
 
 
 struct context {
+
     size_t num_buckets;
     double *size_hist;
     double **life_hist;

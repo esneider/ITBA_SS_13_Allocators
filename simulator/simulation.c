@@ -1,19 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "simulation.h"
 #include "allocator.h"
 #include "talloc.h"
-
-
-#define vrealloc(base, nel) trealloc((base), (nel) * sizeof(*(base)))
-
-
-static void error(struct simulation *simulation) {
-
-    tfree(simulation);
-    printf("There was an error while loading simulation. Aborting.\n");
-    exit(3);
-}
+#include "utils.h"
 
 
 struct simulation *new_simulation(void) {
@@ -23,6 +14,9 @@ struct simulation *new_simulation(void) {
     if (!simulation) error(simulation);
 
     simulation->events = talloc(0, simulation);
+    simulation->heap = talloc(0, simulation);
+
+    if (!simulation->events || !simulation->heap) error(simulation);
 
     return simulation;
 }
@@ -33,15 +27,13 @@ static struct event *new_events(struct simulation *simulation, size_t amount) {
     size_t num = simulation->num_events + amount;
     size_t cap = simulation->_cap_events;
 
-    for (; num > cap; cap = 2*cap + 1) ;
+    for (; num > cap; cap = 2 * cap + 1) ;
 
-    struct event *mem = vrealloc(simulation->events, cap);
-
-    if (!mem) error(simulation);
-
-    simulation->events = mem;
+    simulation->events = vrealloc(simulation->events, cap);
     simulation->num_events = num;
     simulation->_cap_events = cap;
+
+    if (!simulation->events) error(simulation);
 
     return simulation->events + num - amount;
 }
@@ -116,6 +108,8 @@ static size_t hist_bucket(double *hist, struct context *context) {
 
 void load_simulation(struct simulation *simulation, struct context *context) {
 
+    simulation->num_events = 0;
+
     size_t markov_state = context->allocs_initial;
 
     for (size_t ms = 0; ms < simulation->time; ms++) {
@@ -152,4 +146,49 @@ void load_simulation(struct simulation *simulation, struct context *context) {
 
     struct event *mem = vrealloc(simulation->events, simulation->num_events);
     simulation->events = mem ? mem : simulation->events;
+}
+
+
+void run_simulation(struct simulation *simulation) {
+
+    simulation->heap = trealloc(simulation->heap, simulation->heap_size);
+
+    if (!simulation->heap) error(simulation);
+
+    alloc_init(simulation->heap_size, heap);
+
+    struct timeval stop, start;
+
+    for (
+        struct event *event = simulation->events;
+        event < simulation->events + simulation->num_events;
+        event++
+    ) {
+
+        switch (event->type) {
+
+            case MALLOC:
+                gettimeofday(&start, NULL);
+                event->address = alloc_malloc(event->size);
+                gettimeofday(&stop, NULL);
+                simulation->events[event->alternate].address = event->address;
+                break;
+
+            case FREE:
+                gettimeofday(&start, NULL);
+                alloc_free(event->address);
+                gettimeofday(&stop, NULL);
+                break;
+        }
+
+        event->metadata = alloc_metadata();
+        event->execution = stop.tv_usec - start.tv_usec;
+        event->fragmentation = alloc_fragmentation();
+    }
+}
+
+
+void analize_simulation(struct simulation *simulation) {
+
+    // TODO
 }
