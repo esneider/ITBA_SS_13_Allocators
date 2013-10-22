@@ -192,3 +192,9 @@ void analize_simulation(struct simulation *simulation) {
 
     // TODO
 }
+
+
+void dump_simulation(struct simulation *simulation, const char *name) {
+
+    // TODO
+}

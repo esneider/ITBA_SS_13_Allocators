@@ -46,5 +46,7 @@ void run_simulation(struct simulation *simulation);
 
 void analize_simulation(struct simulation *simulation);
 
+void dump_simulation(struct simulation *simulation, const char *name);
+
 
 #endif /* __SIMULATION_H__ */
