@@ -30,8 +30,8 @@ struct info {
     void *arena;
     size_t arena_size;
 
-    struct chunk* begin_chunk;
-    struct chunk* end_chunk;
+    struct chunk* begin;
+    struct chunk* end;
 
 #ifdef META_EXTRA_T
     META_EXTRA_T extra;
@@ -40,7 +40,12 @@ struct info {
 
 struct stats {
 
+   /* Mesures the heap external fragmentation:
+      rel_ext_frag = 1 - larger free block / total free memory */
     double rel_ext_frag;
+
+   /* Mesures the ratio of metadata memory vs total memory:
+      rel_metadata = total metadata size / total memory */
     double rel_metadata;
 };
 
@@ -81,10 +86,10 @@ static inline bool is_used_prev_chunk(struct chunk *chunk) {
 
 static inline size_t size_marker(void) {
 
-    return (1 << 31) - 1;
+    return (1L << 31) - 1;
 }
 
-static inline size_t head_size(struct chunk* chunk) {
+static inline size_t head_size(void) {
 
     return sizeof(struct chunk);
 }
@@ -95,7 +100,7 @@ static inline size_t head_size(struct chunk* chunk) {
 
 static inline void *chunk_data(struct chunk *chunk) {
 
-    return (char*)chunk + head_size(chunk);
+    return (char*)chunk + head_size();
 }
 
 static inline void *prev_chunk_data(struct chunk *chunk) {
@@ -105,7 +110,7 @@ static inline void *prev_chunk_data(struct chunk *chunk) {
 
 static inline struct chunk *data_chunk(void *data) {
 
-    return (void*)((char*)data - head_size(chunk));
+    return (void*)((char*)data - head_size());
 }
 
 #ifdef CHUNK_EXTRA_T
@@ -145,7 +150,7 @@ static inline struct chunk *prev_chunk(struct chunk *chunk) {
 
 static inline struct chunk *begin_chunk(void) {
 
-    return info->begin_chunk;
+    return info->begin;
 }
 
 static inline struct chunk *first_chunk(void) {
@@ -155,7 +160,7 @@ static inline struct chunk *first_chunk(void) {
 
 static inline struct chunk *end_chunk(void) {
 
-    return info->end_chunk;
+    return info->end;
 }
 
 static inline struct chunk *last_chunk(void) {
@@ -186,7 +191,7 @@ static struct chunk *split_chunk(struct chunk *chunk, size_t size) {
     struct chunk *chunk1 = chunk;
     struct chunk *chunk2 = (void*)((char*)chunk_data(chunk1) + size);
     struct chunk *chunk3 = next_chunk(chunk1);
-    size_t size2 = chunk3 - chunk_data(chunk2);
+    size_t size2 = (void*)chunk3 - chunk_data(chunk2);
 
     chunk2->next_size = chunk3->prev_size = size2;
     chunk1->next_size = chunk2->prev_size = size;
@@ -197,7 +202,7 @@ static struct chunk *split_chunk(struct chunk *chunk, size_t size) {
     return chunk2;
 }
 
-static void coalesce_chunk(struct chunk *chunk) {
+static struct chunk *coalesce_chunk(struct chunk *chunk) {
 
     assert(is_free_chunk(chunk));
     assert(is_free_prev_chunk(chunk));
@@ -205,9 +210,11 @@ static void coalesce_chunk(struct chunk *chunk) {
     struct chunk *chunk1 = prev_chunk(chunk);
     struct chunk *chunk2 = chunk;
     struct chunk *chunk3 = next_chunk(chunk2);
-    size_t size = chunk3 - chunk_data(chunk1);
+    size_t size = (void*)chunk3 - chunk_data(chunk1);
 
     chunk1->next_size = chunk3->prev_size = size;
+
+    return chunk1;
 }
 
 static inline void free_chunk(struct chunk *chunk) {
@@ -237,7 +244,7 @@ static void init_heap(size_t size, void *heap) {
     info->heap_size = size;
 
     info->arena = info + 1;
-    info->arena_size = ((char*)heap + size) - info->arena;
+    info->arena_size = (void*)((char*)heap + size) - info->arena;
 
     info->begin = info->arena;
     info->begin->prev_state = USED;
@@ -250,23 +257,20 @@ static void init_heap(size_t size, void *heap) {
     info->end->next_state = USED;
     info->end->prev_size = info->begin->next_size;
     info->end->next_size = size_marker();
-
-    info->free_size = info->begin->next_size;
-    info->used_size = 0;
 }
 
-static struct stats chunk_stats(void) {
+struct stats alloc_stats(void) {
 
     struct stats stats;
     struct chunk *chunk = begin_chunk();
 
+    size_t meta_size = info->heap_size;
     size_t free_size = 0;
-    size_t non_meta_size = 0;
     size_t largest = 0;
 
     for ( ; !is_end_chunk(chunk); chunk = next_chunk(chunk)) {
 
-        non_meta_size += chunk->next_size;
+        meta_size -= chunk->next_size;
 
         if (is_free_chunk(chunk)) {
 
@@ -280,7 +284,7 @@ static struct stats chunk_stats(void) {
     }
 
     stats.rel_ext_frag = largest / (double)free_size;
-    stats.rel_metadata = (info->heap_size - non_meta_size) / (double)free_size;
+    stats.rel_metadata = meta_size / (double)info->heap_size;
 
     return stats;
 }

@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+struct stats;
+
 
 /**
  * Initialize the heap with a block of size bytes.
@@ -28,18 +30,11 @@ void *alloc_malloc(size_t size);
 void alloc_free(void *mem);
 
 /**
- * Mesures the heap fragmentation.
+ * Get allocator statistics.
  *
- * @returns fragmentation = 1 - larger free block / total free memory
+ * @returns a stats structure.
  */
-double alloc_fragmentation(void);
-
-/**
- * Mesures the ratio of metadata memory vs total memory.
- *
- * @returns the relative metadata memory size.
- */
-double alloc_metadata(void);
+struct stats alloc_stats(void);
 
 
 #endif /* __ALLOCATOR_H__ */

@@ -7,6 +7,18 @@
 #include "utils.h"
 
 
+struct stats {
+
+   /* Mesures the heap external fragmentation:
+    * rel_ext_frag = 1 - larger free block / total free memory */
+    double rel_ext_frag;
+
+   /* Mesures the ratio of metadata memory vs total memory:
+    * rel_metadata = total metadata size / total memory */
+    double rel_metadata;
+};
+
+
 struct simulation *new_simulation(void) {
 
     struct simulation *simulation = tcalloc(sizeof(struct simulation), NULL);
@@ -181,9 +193,11 @@ void run_simulation(struct simulation *simulation) {
                 break;
         }
 
-        event->metadata = alloc_metadata();
+        struct stats stats = alloc_stats();
+
+        event->metadata = stats.rel_metadata;
         event->execution = stop.tv_usec - start.tv_usec;
-        event->fragmentation = alloc_fragmentation();
+        event->fragmentation = stats.rel_ext_frag;
     }
 }
 
