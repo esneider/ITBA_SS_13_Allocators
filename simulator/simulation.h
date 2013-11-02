@@ -19,20 +19,25 @@ struct event {
 };
 
 
-struct simulation {
-
-    char *context; /* Context file path */
-    void *heap; /* Heap address */
-    size_t heap_size; /* Heap size (in bytes) */
-    size_t time; /* Simulation time (in ms) */
-    size_t num_events; /* Number of events */
-    struct event *events; /* List of events sorted chronologically */
+struct measures {
 
     double mean_frag; /* Mean fragmentation over time */
     double max_frag; /* Max fragmentation */
     double mean_meta; /* Mean metadata ratio over time */
     double mean_malloc_time; /* Mean malloc execution time */
     double mean_free_time; /* Mean free execution time */
+};
+
+struct simulation {
+
+    char *name; /* Output filename */
+    char *context; /* Context file path */
+    void *heap; /* Heap address */
+    size_t heap_size; /* Heap size (in bytes) */
+    size_t time; /* Simulation time (in ms) */
+    size_t num_events; /* Number of events */
+    struct event *events; /* List of events sorted chronologically */
+    struct measures measures;
 
     size_t _cap_events;
 };
@@ -46,7 +51,7 @@ void run_simulation(struct simulation *simulation);
 
 void analize_simulation(struct simulation *simulation);
 
-void dump_simulation(struct simulation *simulation, const char *name);
+void dump_simulation(struct simulation *simulation);
 
 
 #endif /* __SIMULATION_H__ */

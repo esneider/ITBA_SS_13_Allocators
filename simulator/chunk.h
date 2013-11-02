@@ -14,8 +14,8 @@ struct chunk {
 
     size_t prev_size: 31;
     size_t prev_state: 1;
-    size_t next_size: 31;
-    size_t next_state: 1;
+    size_t curr_size: 31;
+    size_t curr_state: 1;
 
 #ifdef CHUNK_EXTRA_T
     CHUNK_EXTRA_T extra;
@@ -62,12 +62,12 @@ static struct info *info;
 
 static inline bool is_free_chunk(struct chunk *chunk) {
 
-    return chunk->next_state == FREE;
+    return chunk->curr_state == FREE;
 }
 
 static inline bool is_used_chunk(struct chunk *chunk) {
 
-    return chunk->next_state == USED;
+    return chunk->curr_state == USED;
 }
 
 static inline bool is_free_prev_chunk(struct chunk *chunk) {
@@ -131,14 +131,14 @@ static inline bool is_begin_chunk(struct chunk *chunk) {
 
 static inline bool is_end_chunk(struct chunk *chunk) {
 
-    return chunk->next_size == size_marker();
+    return chunk->curr_size == size_marker();
 }
 
 static inline struct chunk *next_chunk(struct chunk *chunk) {
 
     assert(!is_end_chunk(chunk));
 
-    return (void*)((char*)chunk_data(chunk) + chunk->next_size);
+    return (void*)((char*)chunk_data(chunk) + chunk->curr_size);
 }
 
 static inline struct chunk *prev_chunk(struct chunk *chunk) {
@@ -188,16 +188,14 @@ static struct chunk *split_chunk(struct chunk *chunk, size_t size) {
 
     assert(is_free_chunk(chunk));
 
-    struct chunk *chunk1 = chunk;
-    struct chunk *chunk2 = (void*)((char*)chunk_data(chunk1) + size);
-    struct chunk *chunk3 = next_chunk(chunk1);
-    size_t size2 = (void*)chunk3 - chunk_data(chunk2);
+    struct chunk *chunk2 = (void*)((char*)chunk_data(chunk) + size);
+    struct chunk *chunk3 = next_chunk(chunk);
 
-    chunk2->next_size = chunk3->prev_size = size2;
-    chunk1->next_size = chunk2->prev_size = size;
+    chunk->curr_size = chunk3->prev_size = size;
 
-    chunk2->prev_state = FREE;
-    chunk2->next_state = chunk3->next_state;
+    chunk2->curr_size = (void*)chunk3 - chunk_data(chunk2);
+    chunk2->prev_size = size;
+    chunk2->curr_state = chunk2->prev_state = FREE;
 
     return chunk2;
 }
@@ -212,7 +210,7 @@ static struct chunk *coalesce_chunk(struct chunk *chunk) {
     struct chunk *chunk3 = next_chunk(chunk2);
     size_t size = (void*)chunk3 - chunk_data(chunk1);
 
-    chunk1->next_size = chunk3->prev_size = size;
+    chunk1->curr_size = chunk3->prev_size = size;
 
     return chunk1;
 }
@@ -222,14 +220,14 @@ static inline void free_chunk(struct chunk *chunk) {
     assert(is_used_chunk(chunk));
     assert(!is_end_chunk(chunk));
 
-    next_chunk(chunk)->prev_state = chunk->next_state = FREE;
+    next_chunk(chunk)->prev_state = chunk->curr_state = FREE;
 }
 
 static inline void use_chunk(struct chunk *chunk) {
 
     assert(is_free_chunk(chunk));
 
-    next_chunk(chunk)->prev_state = chunk->next_state = USED;
+    next_chunk(chunk)->prev_state = chunk->curr_state = USED;
 }
 
 /*
@@ -248,15 +246,15 @@ static void init_heap(size_t size, void *heap) {
 
     info->begin = info->arena;
     info->begin->prev_state = USED;
-    info->begin->next_state = FREE;
+    info->begin->curr_state = FREE;
     info->begin->prev_size = size_marker();
-    info->begin->next_size = info->arena_size - 2 * head_size();
+    info->begin->curr_size = info->arena_size - 2 * head_size();
 
     info->end = next_chunk(info->begin);
     info->end->prev_state = FREE;
-    info->end->next_state = USED;
-    info->end->prev_size = info->begin->next_size;
-    info->end->next_size = size_marker();
+    info->end->curr_state = USED;
+    info->end->prev_size = info->begin->curr_size;
+    info->end->curr_size = size_marker();
 }
 
 struct stats alloc_stats(void) {
@@ -270,15 +268,15 @@ struct stats alloc_stats(void) {
 
     for ( ; !is_end_chunk(chunk); chunk = next_chunk(chunk)) {
 
-        meta_size -= chunk->next_size;
+        meta_size -= chunk->curr_size;
 
         if (is_free_chunk(chunk)) {
 
-            free_size += chunk->next_size;
+            free_size += chunk->curr_size;
 
-            if (chunk->next_size > largest) {
+            if (chunk->curr_size > largest) {
 
-                largest = chunk->next_size;
+                largest = chunk->curr_size;
             }
         }
     }

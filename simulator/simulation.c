@@ -210,10 +210,9 @@ void analize_simulation(struct simulation *simulation) {
 }
 
 
-void dump_simulation(struct simulation *simulation, const char *name) {
+void dump_simulation(struct simulation *simulation) {
 
     (void)simulation;
-    (void)name;
 
     // TODO
 }

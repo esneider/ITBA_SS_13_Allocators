@@ -12,14 +12,13 @@
 static void usage(struct simulation *simulation) {
 
     tfree(simulation);
-    printf("usage: run -c <context-name> -h <heap-size-in-bytes> -t <time-in-ms> [-s <samples>]\n");
+    printf("usage: run -c <context-name> -h <heap-size-in-bytes> -t <time-in-ms> -o <output-file>\n");
     exit(2);
 }
 
 
-static size_t parse_args(struct simulation *simulation, int argc, char **argv) {
+static void parse_args(struct simulation *simulation, int argc, char **argv) {
 
-    size_t samples = 1;
     size_t mask = 0;
     int args = argc - 1;
     char c;
@@ -29,7 +28,6 @@ static size_t parse_args(struct simulation *simulation, int argc, char **argv) {
         if (!strcmp("-c", argv[i])) {
 
             mask |= 1;
-
             simulation->context = argv[i+1];
 
         } else if (!strcmp("-h", argv[i])) {
@@ -48,22 +46,19 @@ static size_t parse_args(struct simulation *simulation, int argc, char **argv) {
                 usage(simulation);
             }
 
-        } else if (!strcmp("-s", argv[i])) {
+        } else if (!strcmp("-o", argv[i])) {
 
             mask |= 8;
-
-            if (sscanf(argv[i + 1], "%zu%c", &samples, &c) != 1) {
-                usage(simulation);
-            }
+            simulation->name = argv[i + 1];
 
         } else {
             usage(simulation);
         }
     }
 
-    if ((mask & 7) != 7 || args != -1) usage(simulation);
-
-    return samples;
+    if ((mask & 15) != 15 || args != -1) {
+        usage(simulation);
+    }
 }
 
 
@@ -72,31 +67,29 @@ int main(int argc, char **argv) {
     /* Initialization */
 
     struct simulation *simulation = new_simulation();
-    struct stats *stats = new_stats(simulation);
-    size_t samples = parse_args(simulation, argc - 1, argv + 1);
-
+    parse_args(simulation, argc - 1, argv + 1);
     srand(time(NULL));
+
     printf("Loading context...\n");
     struct context *context = load_context(simulation, simulation->context);
 
 
-    /* Simulations */
+    /* Simulation */
 
-    for (size_t i = 0; i < samples; i++) {
+    printf("Loading simulation...\n");
+    load_simulation(simulation, context);
 
-        printf("Loading simulation (%zu/%zu)...\n", i, samples);
-        load_simulation(simulation, context);
+    printf("Running simulation...\n");
+    run_simulation(simulation);
 
-        printf("Running simulation (%zu/%zu)...\n", i, samples);
-        run_simulation(simulation);
+    printf("Analizing simulation...\n");
+    analize_simulation(simulation);
 
-        printf("Analizing simulation (%zu/%zu)...\n", i, samples);
-        analize_simulation(simulation);
-    }
+    /* Dump */
 
-    /* Finalization */
+    printf("Saving simulation...\n");
+    dump_simulation(simulation);
 
-    compute_stats(stats);
-    print_stats(stats);
+    print_measures(&simulation->measures);
     tfree(simulation);
 }

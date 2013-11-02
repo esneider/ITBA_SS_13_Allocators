@@ -1,37 +1,19 @@
 #include "allocator.h"
-
-#define META_EXTRA_T struct meta_extra
-
-struct meta_extra {
-    struct meta_extra *prev;
-    struct meta_extra *next;
-};
-
+#include "list.h"
+#define META_EXTRA_T struct list_head
 #include "chunk.h"
 
-#define DATA(chunk) ((struct meta_extra*)chunk_data(chunk))
-#define DATA_SIZE   (sizeof(struct meta_extra))
-#define PADD_SIZE   (DATA_SIZE + head_size())
 
-
-static inline void delete_node(struct meta_extra *node) {
-
-    node->next->prev = node->prev;
-    node->prev->next = node->next;
-}
+#define DATA(chunk) ((struct list_head*)chunk_data(chunk))
+#define DATA_SIZE   (sizeof(struct list_head))
 
 
 void alloc_init(size_t size, void *heap) {
 
     init_heap(size, heap);
 
-    struct chunk *begin = begin_chunk();
-
-    info->extra.next = DATA(begin);
-    info->extra.prev = NULL;
-
-    DATA(begin)->next = NULL;
-    DATA(begin)->prev = &info->extra;
+    INIT_LIST_HEAD(&info->extra);
+    list_add(DATA(begin_chunk()), &info->extra);
 }
 
 
@@ -39,23 +21,20 @@ void *alloc_malloc(size_t size) {
 
     if (size < DATA_SIZE) size = DATA_SIZE;
 
-    for (struct meta_extra *e = &(info->extra); e->next; e = e->next) {
+    list_for_each(extra, &info->extra) {
 
-        struct chunk *c1 = data_chunk(e->next);
+        struct chunk *c = data_chunk(extra);
 
-        if (c1->next_size >= size) {
+        if (c->curr_size >= size) {
 
-            if (c1->next_size >= size + PADD_SIZE) {
+            if (c->curr_size >= size + DATA_SIZE + head_size()) {
 
-                struct chunk *c2 = split_chunk(c1, size);
-                DATA(c2)->next = DATA(c1)->next;
-                DATA(c2)->prev = DATA(c1);
-                DATA(c2)->next->prev = DATA(c1)->next = DATA(c2);
+                list_add(DATA(split_chunk(c, size)), DATA(c));
             }
 
-            delete_node(DATA(c1));
-            use_chunk(c1);
-            return DATA(c1);
+            list_del(DATA(c));
+            use_chunk(c);
+            return DATA(c);
         }
     }
 
@@ -72,17 +51,15 @@ void alloc_free(void *mem) {
 
     if (is_free_prev_chunk(c)) {
 
-        delete_node(DATA(prev_chunk(c)));
+        list_del(DATA(prev_chunk(c)));
         c = coalesce_chunk(c);
     }
 
     if (is_free_chunk(next_chunk(c))) {
 
-        delete_node(DATA(next_chunk(c)));
+        list_del(DATA(next_chunk(c)));
         coalesce_chunk(next_chunk(c));
     }
 
-    DATA(c)->next = info->extra.next;
-    DATA(c)->prev = &(info->extra);
-    info->extra.next = DATA(c);
+    list_add(DATA(c), &info->extra);
 }

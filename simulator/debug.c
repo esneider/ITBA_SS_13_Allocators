@@ -92,25 +92,20 @@ void print_simulation(struct simulation *simulation, bool events) {
 }
 
 
-void print_stats(struct stats *stats) {
+void print_measures(struct measures *measures) {
 
     printf(
-        "stats = {\n"
-            "\tmean_frag = [%.6lf, %.6lf]\n"
-            "\tmax_frag = [%.6lf, %.6lf]\n"
-            "\tmean_meta = [%.6lf, %.6lf]\n"
-            "\tmean_malloc_time = [%.6lf, %.6lf]\n"
-            "\tmean_free_time = [%.6lf, %.6lf]\n"
+        "measures = {\n"
+            "\tmean_frag = %.6lf\n"
+            "\tmax_frag = %.6lf\n"
+            "\tmean_meta = %.6lf\n"
+            "\tmean_malloc_time = %.6lf\n"
+            "\tmean_free_time = %.6lf\n"
         "}\n",
-        stats->mean_frag.mean,
-        stats->mean_frag.std,
-        stats->max_frag.mean,
-        stats->max_frag.std,
-        stats->mean_meta.mean,
-        stats->mean_meta.std,
-        stats->mean_malloc_time.mean,
-        stats->mean_malloc_time.std,
-        stats->mean_free_time.mean,
-        stats->mean_free_time.std
+        measures->mean_frag,
+        measures->max_frag,
+        measures->mean_meta,
+        measures->mean_malloc_time,
+        measures->mean_free_time
     );
 }
