@@ -204,11 +204,16 @@ void run_simulation(struct simulation *simulation) {
 
 void analize_simulation(struct simulation *simulation) {
 
+    (void)simulation;
+
     // TODO
 }
 
 
 void dump_simulation(struct simulation *simulation, const char *name) {
+
+    (void)simulation;
+    (void)name;
 
     // TODO
 }
