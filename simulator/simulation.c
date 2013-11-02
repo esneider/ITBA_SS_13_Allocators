@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include "simulation.h"
 #include "allocator.h"
 #include "talloc.h"
 #include "utils.h"
+#include "debug.h"
 
 
 struct stats {
@@ -202,11 +204,42 @@ void run_simulation(struct simulation *simulation) {
 }
 
 
+#define MAX(a,b) ((a)>(b)?(a):(b))
+
+
 void analize_simulation(struct simulation *simulation) {
 
-    (void)simulation;
+    struct measures *m = &simulation->measures;
+    memset(m, 0, sizeof(*m));
 
-    // TODO
+    double time = 0;
+
+    for (
+        struct event *event = simulation->events;
+        event < simulation->events + simulation->num_events;
+        event++
+    ) {
+
+        double elapsed_time = event->time - time;
+        time = event->time;
+        printf("et: %lf\n", elapsed_time);
+
+        m->mean_meta += event->metadata * elapsed_time;
+        m->mean_frag += event->fragmentation * elapsed_time;
+        m->max_frag = MAX(m->max_frag, event->fragmentation);
+
+        switch (event->type) {
+            case FREE: m->mean_free_time += event->execution; break;
+            case MALLOC: m->mean_malloc_time += event->execution; break;
+        }
+    }
+
+    print_measures(m);
+
+    m->mean_meta /= simulation->time;
+    m->mean_frag /= simulation->time;
+    m->mean_free_time /= simulation->num_events / 2;
+    m->mean_malloc_time /= simulation->num_events / 2;
 }
 
 
