@@ -13,10 +13,11 @@ CXX           = @echo compiling $< && g++
 DEFINES       = -DQT_WEBKIT -DQT_NO_DEBUG -DQT_NO_KEYWORDS -DQT_SVG_LIB -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
 CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT $(DEFINES)
 CXXFLAGS      = -pipe -O2 -Wall -W -D_REENTRANT $(DEFINES)
-INCPATH       = -I/usr/share/qt4/mkspecs/linux-g++ -I. -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4/QtOpenGL -I/usr/include/qt4/QtSvg -I/usr/include/qt4 -Iqwt-6.1/src -I/usr/X11R6/include -Imoc
-LINK          = @echo linking $@ && g++
-LFLAGS        = -Wl,-O1 -Wl,-rpath,/home/w/TPS/ITBA_SS_13_Allocators/ui/qt/qwt-6.1/lib
-LIBS          = $(SUBLIBS)  -L/usr/lib/i386-linux-gnu -L/usr/X11R6/lib -L/home/w/TPS/ITBA_SS_13_Allocators/ui/qt/qwt-6.1/examples/../lib -lqwt -lQtSvg -lQtOpenGL -lQtGui -lQtCore -lGL -lpthread 
+INCPATH       = -I./parser/TinyThread++-1.1/source -I/usr/share/qt4/mkspecs/linux-g++ -I. -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4/QtOpenGL -I/usr/include/qt4/QtSvg -I/usr/include/qt4 -Iqwt-6.1/src -I/usr/X11R6/include -Imoc
+LINK          = g++
+TOP			  = $(shell pwd)
+LFLAGS        = -Wl,-O1 -Wl,-rpath,$(TOP)/qwt-6.1/lib
+LIBS          = $(SUBLIBS)  -L/usr/lib/i386-linux-gnu -L/usr/X11R6/lib -Lqwt-6.1/lib -lqwt -lQtSvg -lQtOpenGL -lQtGui -lQtCore -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 QMAKE         = /usr/bin/qmake
@@ -48,22 +49,24 @@ SOURCES       = main.cpp \
 		scrollzoomer.cpp \
 		scrollbar.cpp \
 		incrementalplot.cpp \
-		randomplot.cpp moc/moc_mainwindow.cpp \
+		simulationplot.cpp moc/moc_mainwindow.cpp \
 		moc/moc_scrollzoomer.cpp \
 		moc/moc_scrollbar.cpp \
 		moc/moc_incrementalplot.cpp \
-		moc/moc_randomplot.cpp
+		moc/moc_simulationplot.cpp
 OBJECTS       = obj/main.o \
 		obj/mainwindow.o \
 		obj/scrollzoomer.o \
 		obj/scrollbar.o \
 		obj/incrementalplot.o \
-		obj/randomplot.o \
+		obj/simulationplot.o \
 		obj/moc_mainwindow.o \
 		obj/moc_scrollzoomer.o \
 		obj/moc_scrollbar.o \
 		obj/moc_incrementalplot.o \
-		obj/moc_randomplot.o
+		obj/moc_simulationplot.o \
+		obj/parser.o \
+		obj/tinythread.o
 DIST          = /usr/share/qt4/mkspecs/common/unix.conf \
 		/usr/share/qt4/mkspecs/common/linux.conf \
 		/usr/share/qt4/mkspecs/common/gcc-base.conf \
@@ -80,7 +83,7 @@ DIST          = /usr/share/qt4/mkspecs/common/unix.conf \
 		qwt-6.1/qwtconfig.pri \
 		qwt-6.1/qwtbuild.pri \
 		qwt-6.1/qwtfunctions.pri \
-		../examples.pri \
+		./examples.pri \
 		/usr/share/qt4/mkspecs/features/release.prf \
 		/usr/share/qt4/mkspecs/features/default_post.prf \
 		/usr/share/qt4/mkspecs/features/silent.prf \
@@ -97,8 +100,8 @@ DIST          = /usr/share/qt4/mkspecs/common/unix.conf \
 		/usr/share/qt4/mkspecs/features/include_source_dir.prf \
 		simuGui.pro
 QMAKE_TARGET  = simuGui
-DESTDIR       = ../bin/
-TARGET        = ../bin/simuGui
+DESTDIR       = ./bin/
+TARGET        = ./bin/simuGui
 
 first: all
 ####### Implicit rules
@@ -125,7 +128,7 @@ first: all
 all: Makefile $(TARGET)
 
 $(TARGET):  $(OBJECTS)  
-	@$(CHK_DIR_EXISTS) ../bin/ || $(MKDIR) ../bin/ 
+	@$(CHK_DIR_EXISTS) ./bin/ || $(MKDIR) ./bin/ 
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: simuGui.pro  /usr/share/qt4/mkspecs/linux-g++/qmake.conf /usr/share/qt4/mkspecs/common/unix.conf \
@@ -144,7 +147,7 @@ Makefile: simuGui.pro  /usr/share/qt4/mkspecs/linux-g++/qmake.conf /usr/share/qt
 		qwt-6.1/qwtconfig.pri \
 		qwt-6.1/qwtbuild.pri \
 		qwt-6.1/qwtfunctions.pri \
-		../examples.pri \
+		./examples.pri \
 		/usr/share/qt4/mkspecs/features/release.prf \
 		/usr/share/qt4/mkspecs/features/default_post.prf \
 		/usr/share/qt4/mkspecs/features/silent.prf \
@@ -180,7 +183,7 @@ Makefile: simuGui.pro  /usr/share/qt4/mkspecs/linux-g++/qmake.conf /usr/share/qt
 qwt-6.1/qwtconfig.pri:
 qwt-6.1/qwtbuild.pri:
 qwt-6.1/qwtfunctions.pri:
-../examples.pri:
+./examples.pri:
 /usr/share/qt4/mkspecs/features/release.prf:
 /usr/share/qt4/mkspecs/features/default_post.prf:
 /usr/share/qt4/mkspecs/features/silent.prf:
@@ -204,7 +207,7 @@ qmake:  FORCE
 
 dist: 
 	@$(CHK_DIR_EXISTS) obj/simuGui6.1.1 || $(MKDIR) obj/simuGui6.1.1 
-	$(COPY_FILE) --parents $(SOURCES) $(DIST) obj/simuGui6.1.1/ && $(COPY_FILE) --parents mainwindow.h scrollzoomer.h scrollbar.h incrementalplot.h randomplot.h obj/simuGui6.1.1/ && $(COPY_FILE) --parents main.cpp mainwindow.cpp scrollzoomer.cpp scrollbar.cpp incrementalplot.cpp randomplot.cpp obj/simuGui6.1.1/ && (cd `dirname obj/simuGui6.1.1` && $(TAR) simuGui6.1.1.tar simuGui6.1.1 && $(COMPRESS) simuGui6.1.1.tar) && $(MOVE) `dirname obj/simuGui6.1.1`/simuGui6.1.1.tar.gz . && $(DEL_FILE) -r obj/simuGui6.1.1
+	$(COPY_FILE) --parents $(SOURCES) $(DIST) obj/simuGui6.1.1/ && $(COPY_FILE) --parents mainwindow.h scrollzoomer.h scrollbar.h incrementalplot.h simulationplot.h obj/simuGui6.1.1/ && $(COPY_FILE) --parents main.cpp mainwindow.cpp scrollzoomer.cpp scrollbar.cpp incrementalplot.cpp simulationplot.cpp obj/simuGui6.1.1/ && (cd `dirname obj/simuGui6.1.1` && $(TAR) simuGui6.1.1.tar simuGui6.1.1 && $(COMPRESS) simuGui6.1.1.tar) && $(MOVE) `dirname obj/simuGui6.1.1`/simuGui6.1.1.tar.gz . && $(DEL_FILE) -r obj/simuGui6.1.1
 
 
 clean:compiler_clean 
@@ -225,9 +228,9 @@ mocclean: compiler_moc_header_clean compiler_moc_source_clean
 
 mocables: compiler_moc_header_make_all compiler_moc_source_make_all
 
-compiler_moc_header_make_all: moc/moc_mainwindow.cpp moc/moc_scrollzoomer.cpp moc/moc_scrollbar.cpp moc/moc_incrementalplot.cpp moc/moc_randomplot.cpp
+compiler_moc_header_make_all: moc/moc_mainwindow.cpp moc/moc_scrollzoomer.cpp moc/moc_scrollbar.cpp moc/moc_incrementalplot.cpp moc/moc_simulationplot.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc/moc_mainwindow.cpp moc/moc_scrollzoomer.cpp moc/moc_scrollbar.cpp moc/moc_incrementalplot.cpp moc/moc_randomplot.cpp
+	-$(DEL_FILE) moc/moc_mainwindow.cpp moc/moc_scrollzoomer.cpp moc/moc_scrollbar.cpp moc/moc_incrementalplot.cpp moc/moc_simulationplot.cpp
 moc/moc_mainwindow.cpp: mainwindow.h
 	@echo moc mainwindow.h && /usr/bin/moc-qt4 $(DEFINES) $(INCPATH) mainwindow.h -o moc/moc_mainwindow.cpp
 
@@ -266,7 +269,7 @@ moc/moc_incrementalplot.cpp: qwt-6.1/src/qwt_plot.h \
 		incrementalplot.h
 	@echo moc incrementalplot.h && /usr/bin/moc-qt4 $(DEFINES) $(INCPATH) incrementalplot.h -o moc/moc_incrementalplot.cpp
 
-moc/moc_randomplot.cpp: incrementalplot.h \
+moc/moc_simulationplot.cpp: incrementalplot.h \
 		qwt-6.1/src/qwt_plot.h \
 		qwt-6.1/src/qwt_global.h \
 		qwt-6.1/src/qwt_text.h \
@@ -278,8 +281,8 @@ moc/moc_randomplot.cpp: incrementalplot.h \
 		qwt-6.1/src/qwt_scale_map.h \
 		qwt-6.1/src/qwt_transform.h \
 		qwt-6.1/src/qwt_interval.h \
-		randomplot.h
-	@echo moc randomplot.h && /usr/bin/moc-qt4 $(DEFINES) $(INCPATH) randomplot.h -o moc/moc_randomplot.cpp
+		simulationplot.h
+	@echo moc simulationplot.h && /usr/bin/moc-qt4 $(DEFINES) $(INCPATH) simulationplot.h -o moc/moc_simulationplot.cpp
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
@@ -300,10 +303,16 @@ compiler_clean: compiler_moc_header_clean
 
 ####### Compile
 
+obj/parser.o: parser/parser.cpp parser/TinyThread++-1.1/source/tinythread.h  parser/TinyThread++-1.1/source/fast_mutex.h
+	$(CXX) $(CXXFLAGS) $(INCPATH) $(LIBS) -c -o obj/parser.o parser/parser.cpp
+
+obj/tinythread.o: parser/TinyThread++-1.1/source/tinythread.cpp
+	$(CXX) $(CXXFLAGS) $(INCPATH) $(LIBS) -c -o obj/tinythread.o $<
+
 obj/main.o: main.cpp mainwindow.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/main.o main.cpp
 
-obj/mainwindow.o: mainwindow.cpp randomplot.h \
+obj/mainwindow.o: mainwindow.cpp simulationplot.h \
 		incrementalplot.h \
 		qwt-6.1/src/qwt_plot.h \
 		qwt-6.1/src/qwt_global.h \
@@ -377,7 +386,7 @@ obj/incrementalplot.o: incrementalplot.cpp qwt-6.1/src/qwt_plot.h \
 		incrementalplot.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/incrementalplot.o incrementalplot.cpp
 
-obj/randomplot.o: randomplot.cpp qwt-6.1/src/qwt_plot_grid.h \
+obj/simulationplot.o: simulationplot.cpp qwt-6.1/src/qwt_plot_grid.h \
 		qwt-6.1/src/qwt_global.h \
 		qwt-6.1/src/qwt_plot_item.h \
 		qwt-6.1/src/qwt_text.h \
@@ -400,9 +409,9 @@ obj/randomplot.o: randomplot.cpp qwt-6.1/src/qwt_plot_grid.h \
 		qwt-6.1/src/qwt_plot_picker.h \
 		qwt-6.1/src/qwt_picker.h \
 		qwt-6.1/src/qwt_event_pattern.h \
-		randomplot.h \
+		simulationplot.h \
 		incrementalplot.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/randomplot.o randomplot.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/simulationplot.o simulationplot.cpp
 
 obj/moc_mainwindow.o: moc/moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/moc_mainwindow.o moc/moc_mainwindow.cpp
@@ -416,8 +425,8 @@ obj/moc_scrollbar.o: moc/moc_scrollbar.cpp
 obj/moc_incrementalplot.o: moc/moc_incrementalplot.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/moc_incrementalplot.o moc/moc_incrementalplot.cpp
 
-obj/moc_randomplot.o: moc/moc_randomplot.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/moc_randomplot.o moc/moc_randomplot.cpp
+obj/moc_simulationplot.o: moc/moc_simulationplot.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/moc_simulationplot.o moc/moc_simulationplot.cpp
 
 ####### Install
 

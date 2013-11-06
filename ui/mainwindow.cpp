@@ -7,7 +7,6 @@
 #include <qcheckbox.h>
 #include <qwhatsthis.h>
 #include <qpixmap.h>
-#include "randomplot.h"
 #include "mainwindow.h"
 #include "start.xpm"
 #include "clear.xpm"
@@ -63,7 +62,7 @@ MainWindow::MainWindow()
     ( void )statusBar();
 #endif
 
-    d_plot = new RandomPlot( this );
+    d_plot = new SimulationPlot( this, "output.txt" );
     const int margin = 4;
     d_plot->setContentsMargins( margin, margin, margin, margin );
 
@@ -132,8 +131,7 @@ QToolBar *MainWindow::toolBar()
 void MainWindow::appendPoints( bool on )
 {
     if ( on )
-        d_plot->append( d_timerCount->value(),
-                        d_randomCount->value() );
+        d_plot->append();
     else
         d_plot->stop();
 }

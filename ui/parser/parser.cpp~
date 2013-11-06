@@ -39,7 +39,7 @@ void Parser::parse(){
 void Parser::parseSimulation(){
     lock_guard<mutex> lock(mtx);
     sim = (simulation*) malloc(sizeof(simulation));
-    if(int argc=fscanf(input,
+    if(fscanf(input,
             "simulation = {\n"
                 "\tcontext = %s\n"
                 "\theap_size = %zu\n"
@@ -50,7 +50,7 @@ void Parser::parseSimulation(){
             &(sim->heap_size),
             &(sim->time),
             &(sim->num_events)
-        )!=4)printf("arrchivo malformado(sim)[%d]!\n",argc);
+        )!=4)printf("arrchivo malformado(sim)[]!\n");
     cv.notify_one();
 }
 

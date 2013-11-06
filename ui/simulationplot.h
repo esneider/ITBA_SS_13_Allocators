@@ -1,17 +1,18 @@
-#ifndef _RANDOMPLOT_H_
-#define _RANDOMPLOT_H_ 1
+#ifndef _SIMULATIONPLOT_H_
+#define _SIMULATIONPLOT_H_ 1
 
 #include "incrementalplot.h"
 #include <qdatetime.h>
+#include "parser/parser.h"
 
 class QTimer;
 
-class RandomPlot: public IncrementalPlot
+class SimulationPlot: public IncrementalPlot
 {
     Q_OBJECT
 
 public:
-    RandomPlot( QWidget *parent );
+    SimulationPlot( QWidget *parent,char* simulation_data );
 
     virtual QSize sizeHint() const;
 
@@ -22,7 +23,7 @@ Q_SIGNALS:
 public Q_SLOTS:
     void clear();
     void stop();
-    void append( int timeout, int count );
+    void append();
 
 private Q_SLOTS:
     void appendPoint();
@@ -31,12 +32,15 @@ private:
     void initCurve();
 
     QTimer *d_timer;
-    int d_timerCount;
+    int d_eventCount;
 
     QTime d_timeStamp;
+
+    Parser* parser;
     
-    double x = 0.0;
-	double y = 0.0;
+    struct event* nextEvent;
+    int currentTime;
+    double timeScale;
 };
 
-#endif // _RANDOMPLOT_H_
+#endif // _SIMULATIONPLOT_H_

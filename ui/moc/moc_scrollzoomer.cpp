@@ -1,15 +1,15 @@
 /****************************************************************************
-** Meta object code from reading C++ file 'incrementalplot.h'
+** Meta object code from reading C++ file 'scrollzoomer.h'
 **
-** Created: Thu Oct 31 19:56:01 2013
+** Created: Wed Nov 6 15:31:16 2013
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.1)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../incrementalplot.h"
+#include "../scrollzoomer.h"
 #if !defined(Q_MOC_OUTPUT_REVISION)
-#error "The header file 'incrementalplot.h' doesn't include <QObject>."
+#error "The header file 'scrollzoomer.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 63
 #error "This file was generated using the moc from 4.8.1. It"
 #error "cannot be used with the include files from this version of Qt."
@@ -17,7 +17,7 @@
 #endif
 
 QT_BEGIN_MOC_NAMESPACE
-static const uint qt_meta_data_IncrementalPlot[] = {
+static const uint qt_meta_data_ScrollZoomer[] = {
 
  // content:
        6,       // revision
@@ -31,56 +31,57 @@ static const uint qt_meta_data_IncrementalPlot[] = {
        0,       // signalCount
 
  // slots: signature, parameters, type, tag, flags
-      17,   16,   16,   16, 0x0a,
+      24,   14,   13,   13, 0x08,
 
        0        // eod
 };
 
-static const char qt_meta_stringdata_IncrementalPlot[] = {
-    "IncrementalPlot\0\0showSymbols(bool)\0"
+static const char qt_meta_stringdata_ScrollZoomer[] = {
+    "ScrollZoomer\0\0o,min,max\0"
+    "scrollBarMoved(Qt::Orientation,double,double)\0"
 };
 
-void IncrementalPlot::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+void ScrollZoomer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     if (_c == QMetaObject::InvokeMetaMethod) {
         Q_ASSERT(staticMetaObject.cast(_o));
-        IncrementalPlot *_t = static_cast<IncrementalPlot *>(_o);
+        ScrollZoomer *_t = static_cast<ScrollZoomer *>(_o);
         switch (_id) {
-        case 0: _t->showSymbols((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 0: _t->scrollBarMoved((*reinterpret_cast< Qt::Orientation(*)>(_a[1])),(*reinterpret_cast< double(*)>(_a[2])),(*reinterpret_cast< double(*)>(_a[3]))); break;
         default: ;
         }
     }
 }
 
-const QMetaObjectExtraData IncrementalPlot::staticMetaObjectExtraData = {
+const QMetaObjectExtraData ScrollZoomer::staticMetaObjectExtraData = {
     0,  qt_static_metacall 
 };
 
-const QMetaObject IncrementalPlot::staticMetaObject = {
-    { &QwtPlot::staticMetaObject, qt_meta_stringdata_IncrementalPlot,
-      qt_meta_data_IncrementalPlot, &staticMetaObjectExtraData }
+const QMetaObject ScrollZoomer::staticMetaObject = {
+    { &QwtPlotZoomer::staticMetaObject, qt_meta_stringdata_ScrollZoomer,
+      qt_meta_data_ScrollZoomer, &staticMetaObjectExtraData }
 };
 
 #ifdef Q_NO_DATA_RELOCATION
-const QMetaObject &IncrementalPlot::getStaticMetaObject() { return staticMetaObject; }
+const QMetaObject &ScrollZoomer::getStaticMetaObject() { return staticMetaObject; }
 #endif //Q_NO_DATA_RELOCATION
 
-const QMetaObject *IncrementalPlot::metaObject() const
+const QMetaObject *ScrollZoomer::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
 }
 
-void *IncrementalPlot::qt_metacast(const char *_clname)
+void *ScrollZoomer::qt_metacast(const char *_clname)
 {
     if (!_clname) return 0;
-    if (!strcmp(_clname, qt_meta_stringdata_IncrementalPlot))
-        return static_cast<void*>(const_cast< IncrementalPlot*>(this));
-    return QwtPlot::qt_metacast(_clname);
+    if (!strcmp(_clname, qt_meta_stringdata_ScrollZoomer))
+        return static_cast<void*>(const_cast< ScrollZoomer*>(this));
+    return QwtPlotZoomer::qt_metacast(_clname);
 }
 
-int IncrementalPlot::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int ScrollZoomer::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = QwtPlot::qt_metacall(_c, _id, _a);
+    _id = QwtPlotZoomer::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {

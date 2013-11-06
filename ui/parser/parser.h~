@@ -36,7 +36,7 @@ public:
 
     simulation* getSimulation();
     
-    event* getNextEvent();
+    event getNextEvent();
 
     static Parser* INSTANCE;
 

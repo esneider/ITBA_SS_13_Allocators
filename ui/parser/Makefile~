@@ -73,7 +73,7 @@ clean:
 
 
 parser$(EXE): $(PARSER_OBJS) $(TINYTHREAD_OBJS)
-	$(CPP) $(LFLAGS) -o $@ $(PARSER_OBJS) $(TINYTHREAD_OBJS) $(LIBS)
+	$(CPP) $(LFLAGS) $(LIBS) -o $@ $(PARSER_OBJS) $(TINYTHREAD_OBJS)
 	
 
 obj/testParser.o: testParser.cpp ./TinyThread++-1.1/source/tinythread.h  ./TinyThread++-1.1/source/fast_mutex.h

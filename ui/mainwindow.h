@@ -1,6 +1,7 @@
 #ifndef _MAINWINDOW_H_
 #define _MAINWINDOW_H_ 1
 
+#include "simulationplot.h"
 #include <qmainwindow.h>
 #include <qaction.h>
 
@@ -31,7 +32,7 @@ private:
     QCheckBox *d_symbolType;
     QAction *d_startAction;
     QAction *d_clearAction;
-    RandomPlot *d_plot;
+    SimulationPlot *d_plot;
 };
 
 #endif
