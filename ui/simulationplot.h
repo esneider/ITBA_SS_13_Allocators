@@ -23,7 +23,7 @@ Q_SIGNALS:
 public Q_SLOTS:
     void clear();
     void stop();
-    void append();
+    void append(double ts);
 
 private Q_SLOTS:
     void appendPoint();

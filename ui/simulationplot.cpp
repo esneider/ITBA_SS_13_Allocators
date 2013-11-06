@@ -12,7 +12,7 @@ SimulationPlot::SimulationPlot( QWidget *parent, char* simulation_data ):
     d_timer( 0 ),
     d_eventCount( 0 ),
     currentTime( 0 ),
-    timeScale( 0.5)
+    timeScale( 100.0 )
 {
     
    	parser = new Parser(simulation_data);
@@ -55,8 +55,9 @@ void SimulationPlot::appendPoint()
 	}
 }
 
-void SimulationPlot::append()
+void SimulationPlot::append(double ts)
 {
+	timeScale = ts;
     if ( !d_timer )
     {
         d_timer = new QTimer( this );

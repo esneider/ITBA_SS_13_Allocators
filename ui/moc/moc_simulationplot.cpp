@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'simulationplot.h'
 **
-** Created: Wed Nov 6 15:31:20 2013
+** Created: Wed Nov 6 18:10:22 2013
 **      by: The Qt Meta Object Compiler version 63 (Qt 4.8.1)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -37,16 +37,16 @@ static const uint qt_meta_data_SimulationPlot[] = {
  // slots: signature, parameters, type, tag, flags
       46,   15,   15,   15, 0x0a,
       54,   15,   15,   15, 0x0a,
-      61,   15,   15,   15, 0x0a,
-      70,   15,   15,   15, 0x08,
+      64,   61,   15,   15, 0x0a,
+      79,   15,   15,   15, 0x08,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_SimulationPlot[] = {
     "SimulationPlot\0\0running(bool)\0ms\0"
-    "elapsed(int)\0clear()\0stop()\0append()\0"
-    "appendPoint()\0"
+    "elapsed(int)\0clear()\0stop()\0ts\0"
+    "append(double)\0appendPoint()\0"
 };
 
 void SimulationPlot::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
@@ -59,7 +59,7 @@ void SimulationPlot::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 1: _t->elapsed((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 2: _t->clear(); break;
         case 3: _t->stop(); break;
-        case 4: _t->append(); break;
+        case 4: _t->append((*reinterpret_cast< double(*)>(_a[1]))); break;
         case 5: _t->appendPoint(); break;
         default: ;
         }

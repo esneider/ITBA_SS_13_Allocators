@@ -15,7 +15,7 @@ class MainWindow: public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindow();
+    MainWindow(char* simulationData);
 
 private Q_SLOTS:
     void showRunning( bool );
@@ -24,7 +24,6 @@ private Q_SLOTS:
 
 private:
     QToolBar *toolBar();
-    void initWhatsThis();
 
 private:
     Counter *d_randomCount;
