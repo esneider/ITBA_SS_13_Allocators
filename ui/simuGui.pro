@@ -7,7 +7,7 @@
 # modify it under the terms of the Qwt License, Version 1.0
 ################################################################
 
-include( $${PWD}/../examples.pri )
+include( $${PWD}/examples.pri )
 
 TARGET       = simuGui
 
@@ -16,8 +16,10 @@ HEADERS = \
     scrollzoomer.h \
     scrollbar.h \
     incrementalplot.h \
-    randomplot.h \
-    parser.h
+    simulationplot.h \
+    parser/parser.h \
+    parser/TinyThread++-1.1/source/tinythread.h \
+    parser/TinyThread++-1.1/source/fast_mutex.h
 
 SOURCES = \
     main.cpp \
@@ -25,6 +27,7 @@ SOURCES = \
     scrollzoomer.cpp \
     scrollbar.cpp \
     incrementalplot.cpp \
-    randomplot.cpp \
-    parser.cpp
+    simulationplot.cpp \
+    parser/parser.cpp \
+    parser/TinyThread++-1.1/source/tinythread.cpp
 

@@ -7,7 +7,7 @@
 # modify it under the terms of the Qwt License, Version 1.0
 ###################################################################
 
-QWT_ROOT = $${PWD}/..
+QWT_ROOT = $${PWD}/qwt-6.1
 include( $${QWT_ROOT}/qwtconfig.pri )
 include( $${QWT_ROOT}/qwtbuild.pri )
 include( $${QWT_ROOT}/qwtfunctions.pri )
@@ -15,6 +15,8 @@ include( $${QWT_ROOT}/qwtfunctions.pri )
 TEMPLATE     = app
 
 INCLUDEPATH += $${QWT_ROOT}/src
+INCLUDEPATH += $${PWD}/parser/TinyThread++-1.1/source
+
 DEPENDPATH  += $${QWT_ROOT}/src
 
 !debug_and_release {
