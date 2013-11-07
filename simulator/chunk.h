@@ -6,8 +6,8 @@
 #include <assert.h>
 
 
-#define FREE 0
-#define USED 1
+#define FREE_CHUNK 0
+#define USED_CHUNK 1
 
 
 struct chunk {
@@ -62,22 +62,22 @@ static struct info *info;
 
 static inline bool is_free_chunk(struct chunk *chunk) {
 
-    return chunk->curr_state == FREE;
+    return chunk->curr_state == FREE_CHUNK;
 }
 
 static inline bool is_used_chunk(struct chunk *chunk) {
 
-    return chunk->curr_state == USED;
+    return chunk->curr_state == USED_CHUNK;
 }
 
 static inline bool is_free_prev_chunk(struct chunk *chunk) {
 
-    return chunk->prev_state == FREE;
+    return chunk->prev_state == FREE_CHUNK;
 }
 
 static inline bool is_used_prev_chunk(struct chunk *chunk) {
 
-    return chunk->prev_state == USED;
+    return chunk->prev_state == USED_CHUNK;
 }
 
 /*
@@ -191,11 +191,9 @@ static struct chunk *split_chunk(struct chunk *chunk, size_t size) {
     struct chunk *chunk2 = (void*)((char*)chunk_data(chunk) + size);
     struct chunk *chunk3 = next_chunk(chunk);
 
-    chunk->curr_size = chunk3->prev_size = size;
-
-    chunk2->curr_size = (void*)chunk3 - chunk_data(chunk2);
-    chunk2->prev_size = size;
-    chunk2->curr_state = chunk2->prev_state = FREE;
+    chunk->curr_size   = chunk2->prev_size  = size;
+    chunk2->curr_size  = chunk3->prev_size  = (void*)chunk3 - chunk_data(chunk2);
+    chunk2->curr_state = chunk2->prev_state = FREE_CHUNK;
 
     return chunk2;
 }
@@ -220,14 +218,14 @@ static inline void free_chunk(struct chunk *chunk) {
     assert(is_used_chunk(chunk));
     assert(!is_end_chunk(chunk));
 
-    next_chunk(chunk)->prev_state = chunk->curr_state = FREE;
+    next_chunk(chunk)->prev_state = chunk->curr_state = FREE_CHUNK;
 }
 
 static inline void use_chunk(struct chunk *chunk) {
 
     assert(is_free_chunk(chunk));
 
-    next_chunk(chunk)->prev_state = chunk->curr_state = USED;
+    next_chunk(chunk)->prev_state = chunk->curr_state = USED_CHUNK;
 }
 
 /*
@@ -245,14 +243,14 @@ static void init_heap(size_t size, void *heap) {
     info->arena_size = (void*)((char*)heap + size) - info->arena;
 
     info->begin = info->arena;
-    info->begin->prev_state = USED;
-    info->begin->curr_state = FREE;
+    info->begin->prev_state = USED_CHUNK;
+    info->begin->curr_state = FREE_CHUNK;
     info->begin->prev_size = size_marker();
     info->begin->curr_size = info->arena_size - 2 * head_size();
 
     info->end = next_chunk(info->begin);
-    info->end->prev_state = FREE;
-    info->end->curr_state = USED;
+    info->end->prev_state = FREE_CHUNK;
+    info->end->curr_state = USED_CHUNK;
     info->end->prev_size = info->begin->curr_size;
     info->end->curr_size = size_marker();
 }
@@ -290,7 +288,7 @@ struct stats alloc_stats(void) {
 
 #undef CHUNK_EXTRA_T
 #undef META_EXTRA_T
-#undef FREE
-#undef USED
+#undef FREE_CHUNK
+#undef USED_CHUNK
 
 #endif /* __CHUNK_H__ */

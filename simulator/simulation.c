@@ -223,7 +223,6 @@ void analize_simulation(struct simulation *simulation) {
 
         double elapsed_time = event->time - time;
         time = event->time;
-        printf("et: %lf  frag: %lf   %s  %s\n", elapsed_time, event->fragmentation, time > simulation->time ? "OUCH" : "", event->type == FREE ? "FREE" : "MALLOC");
 
         if (time <= simulation->time) {
             m->mean_meta += event->metadata * elapsed_time;
@@ -236,8 +235,6 @@ void analize_simulation(struct simulation *simulation) {
             case MALLOC: m->mean_malloc_time += event->execution; break;
         }
     }
-
-    print_measures(m);
 
     m->mean_meta /= simulation->time;
     m->mean_frag /= simulation->time;
