@@ -20,6 +20,7 @@ SimulationPlotManager::SimulationPlotManager(IncrementalPlot* p1, IncrementalPlo
 void SimulationPlotManager::appendPoint()
 {
 	currentTime= nextEvent->time;
+	
     Q_EMIT elapsed( currentTime );
 
     plot1->appendPoint( QPointF( currentTime, nextEvent->size ) );
@@ -34,7 +35,9 @@ void SimulationPlotManager::appendPoint()
 void SimulationPlotManager::append(double ts)
 {
 	timeScale = ts;
-
+	
+    Q_EMIT running( true );
+    
     d_eventCount = parser->getSimulation()->num_events;
 
 	nextEvent = parser->getNextEvent();

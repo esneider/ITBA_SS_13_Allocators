@@ -7,6 +7,12 @@
 #include "incrementalplot.h"
 #include <qpaintengine.h>
 
+
+
+#include <qwt_plot_grid.h>
+#include <qwt_plot_layout.h>
+#include <qwt_scale_draw.h>
+
 class CurveData: public QwtArraySeriesData<QPointF>
 {
 public:
@@ -56,6 +62,19 @@ IncrementalPlot::IncrementalPlot( QWidget *parent ):
     d_curve->attach( this );
 
     setAutoReplot( false );
+    
+    setFrameStyle( QFrame::NoFrame );
+    setLineWidth( 0 );
+
+   plotLayout()->setAlignCanvasToScales( true );
+
+    QwtPlotGrid *grid = new QwtPlotGrid;
+    grid->setMajorPen( Qt::gray, 0, Qt::DotLine );
+    grid->attach( this );
+
+    setCanvasBackground( QColor( 29, 100, 141 ) ); // nice blue
+    
+    replot();
 }
 
 IncrementalPlot::~IncrementalPlot()

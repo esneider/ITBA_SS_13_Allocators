@@ -7,7 +7,7 @@
 
 class QTimer;
 
-class SimulationPlotManager: QObject
+class SimulationPlotManager: public QObject
 {
 
     Q_OBJECT
@@ -15,13 +15,15 @@ class SimulationPlotManager: QObject
 public:
     SimulationPlotManager(IncrementalPlot* plot1, IncrementalPlot* plot2, IncrementalPlot* plot3, IncrementalPlot* plot4,char* simulation_data );
 
-public:
-    void append(double ts);
-
 
 Q_SIGNALS:
     void running( bool );
     void elapsed( int ms );
+
+
+public:
+    void append(double ts);
+
 
 private Q_SLOTS:
     void appendPoint();

@@ -7,6 +7,7 @@
 #include <qcheckbox.h>
 #include <qwhatsthis.h>
 #include <qpixmap.h>
+
 #include "mainwindow.h"
 #include "start.xpm"
 #include "clear.xpm"
@@ -62,7 +63,10 @@ MainWindow::MainWindow(char* simulationData)
     ( void )statusBar();
 #endif
 
-    d_plot = new IncrementalPlot( this );
+    d_plot = new IncrementalPlot( this );   
+    
+    
+    
     manager = new SimulationPlotManager(d_plot,NULL,NULL,NULL,simulationData);
     const int margin = 4;
     d_plot->setContentsMargins( margin, margin, margin, margin );
@@ -70,8 +74,8 @@ MainWindow::MainWindow(char* simulationData)
     setCentralWidget( d_plot );
 
     connect( d_startAction, SIGNAL( toggled( bool ) ), this, SLOT( appendPoints( bool ) ) );
-    connect( d_plot, SIGNAL( running( bool ) ), this, SLOT( showRunning( bool ) ) );
-    connect( d_plot, SIGNAL( elapsed( int ) ), this, SLOT( showElapsed( int ) ) );
+    connect( manager, SIGNAL( running( bool ) ), this, SLOT( showRunning( bool ) ) );
+    connect( manager, SIGNAL( elapsed( int ) ), this, SLOT( showElapsed( int ) ) );
     
     setContextMenuPolicy( Qt::NoContextMenu );
 }
@@ -116,8 +120,9 @@ void MainWindow::appendPoints( bool on )
 void MainWindow::showRunning( bool running )
 {
     d_timerCount->setEnabled( !running );
-    d_startAction->setChecked( running );
-    d_startAction->setText( running ? "Stop" : "Start" );
+    //d_startAction->setChecked( running );->setText( running ? "Stop" : "Start" );
+    d_startAction->setText("Start simulation");
+    d_startAction->setEnabled( !running );
 }
 
 void MainWindow::showElapsed( int ms )
