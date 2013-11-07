@@ -245,7 +245,41 @@ void analize_simulation(struct simulation *simulation) {
 
 void dump_simulation(struct simulation *simulation) {
 
-    (void)simulation;
+    FILE *f = fopen(simulation->name, "w");
 
-    // TODO
+    if (!f) error(simulation);
+
+    fprintf(
+        f,
+        "%s\n" "%zu\n" "%zu\n" "%lf\n" "%lf\n" "%lf\n" "%lf\n" "%lf\n" "%zu\n",
+        simulation->context,
+        simulation->heap_size,
+        simulation->time,
+        simulation->measures.mean_frag,
+        simulation->measures.max_frag,
+        simulation->measures.mean_meta,
+        simulation->measures.mean_malloc_time,
+        simulation->measures.mean_free_time,
+        simulation->num_events
+    );
+
+    for (size_t i = 0; i < simulation->num_events; i++) {
+
+        struct event *e = simulation->events + i;
+
+        fprintf(
+            f,
+            "%zu\n" "%s\n" "%zu\n" "%zu\n" "%zu\n" "%lf\n" "%lf\n" "%lf\n",
+            i,
+            e->type == FREE ? "free" : "malloc",
+            e->size,
+            e->address - simulation->heap,
+            e->alternate,
+            e->metadata,
+            e->execution,
+            e->fragmentation
+        );
+    }
+
+    fclose(f);
 }
