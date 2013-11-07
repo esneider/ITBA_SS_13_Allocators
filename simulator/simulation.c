@@ -204,13 +204,14 @@ void run_simulation(struct simulation *simulation) {
 }
 
 
-#define MAX(a,b) ((a)>(b)?(a):(b))
+#define MIN(a,b) ((a)<(b)?(a):(b))
 
 
 void analize_simulation(struct simulation *simulation) {
 
     struct measures *m = &simulation->measures;
     memset(m, 0, sizeof(*m));
+    m->max_frag = 1.0;
 
     double time = 0;
 
@@ -222,11 +223,13 @@ void analize_simulation(struct simulation *simulation) {
 
         double elapsed_time = event->time - time;
         time = event->time;
-        printf("et: %lf\n", elapsed_time);
+        printf("et: %lf  frag: %lf   %s  %s\n", elapsed_time, event->fragmentation, time > simulation->time ? "OUCH" : "", event->type == FREE ? "FREE" : "MALLOC");
 
-        m->mean_meta += event->metadata * elapsed_time;
-        m->mean_frag += event->fragmentation * elapsed_time;
-        m->max_frag = MAX(m->max_frag, event->fragmentation);
+        if (time <= simulation->time) {
+            m->mean_meta += event->metadata * elapsed_time;
+            m->mean_frag += event->fragmentation * elapsed_time;
+            m->max_frag = MIN(m->max_frag, event->fragmentation);
+        }
 
         switch (event->type) {
             case FREE: m->mean_free_time += event->execution; break;
