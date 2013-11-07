@@ -31,7 +31,10 @@ private:
     QCheckBox *d_symbolType;
     QAction *d_startAction;
     QAction *d_clearAction;
-    IncrementalPlot *d_plot;
+    IncrementalPlot *d_plot1;
+    IncrementalPlot *d_plot2;
+    IncrementalPlot *d_plot3;
+    IncrementalPlot *d_plot4;
     SimulationPlotManager* manager;
 };
 

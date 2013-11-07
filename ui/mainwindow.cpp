@@ -63,15 +63,27 @@ MainWindow::MainWindow(char* simulationData)
     ( void )statusBar();
 #endif
 
-    d_plot = new IncrementalPlot( this );   
+    d_plot1 = new IncrementalPlot( this ); 
+    d_plot2 = new IncrementalPlot( this ); 
+    d_plot3 = new IncrementalPlot( this ); 
+    d_plot4 = new IncrementalPlot( this );   
+    
+    QWidget *box = new QWidget( this);
+    QGridLayout *layout = new QGridLayout( box );
+    layout->addWidget( d_plot1 ,0,0 );
+    layout->addWidget( d_plot2 ,0,1);
+    layout->addWidget( d_plot3 ,1,0);
+    layout->addWidget( d_plot4 ,1,1);
     
     
-    
-    manager = new SimulationPlotManager(d_plot,NULL,NULL,NULL,simulationData);
+    manager = new SimulationPlotManager(d_plot1,d_plot2,d_plot3,d_plot4,simulationData);
     const int margin = 4;
-    d_plot->setContentsMargins( margin, margin, margin, margin );
+    d_plot1->setContentsMargins( margin, margin, margin, margin );
+    d_plot2->setContentsMargins( margin, margin, margin, margin );
+    d_plot3->setContentsMargins( margin, margin, margin, margin );
+    d_plot4->setContentsMargins( margin, margin, margin, margin );
 
-    setCentralWidget( d_plot );
+    setCentralWidget( box );
 
     connect( d_startAction, SIGNAL( toggled( bool ) ), this, SLOT( appendPoints( bool ) ) );
     connect( manager, SIGNAL( running( bool ) ), this, SLOT( showRunning( bool ) ) );

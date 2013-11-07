@@ -126,20 +126,10 @@ void IncrementalPlot::clearPoints()
 
 void IncrementalPlot::showSymbols( bool on )
 {
-    if ( on )
-    {
-        d_curve->setStyle( QwtPlotCurve::Lines );
-    	d_curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
-        d_curve->setSymbol( new QwtSymbol( QwtSymbol::XCross,
-            Qt::NoBrush, QPen( Qt::white ), QSize( 4, 4 ) ) );
-    }
-    else
-    {
-        d_curve->setPen( Qt::white );
-    	d_curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
-        d_curve->setStyle( QwtPlotCurve::Lines );
-        d_curve->setSymbol( NULL );
-    }
+    d_curve->setStyle( QwtPlotCurve::Lines );
+	d_curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
+    d_curve->setSymbol( new QwtSymbol( QwtSymbol::XCross,
+    	Qt::NoBrush, QPen( Qt::white ), QSize( 4, 4 ) ) );
 
     replot();
 }
