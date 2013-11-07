@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 #include "simulation.h"
 #include "allocator.h"
 #include "talloc.h"
 #include "utils.h"
 #include "debug.h"
+#include "timing.h"
 
 
 struct stats {
@@ -53,7 +53,11 @@ static struct event *new_events(struct simulation *simulation, size_t amount) {
 }
 
 
+#ifdef __APPLE__
 static int cmp(void *thunk, const void *a, const void *b) {
+#else
+static int cmp(const void *a, const void *b, void *thunk) {
+#endif
 
     const size_t *aa = a;
     const size_t *bb = b;
@@ -74,7 +78,11 @@ static void sort_simulation(struct simulation *simulation) {
 
     for (size_t i = 0; i < simulation->num_events; i++) vec[i] = i;
 
+#ifdef __APPLE__
     qsort_r(vec, simulation->num_events, sizeof(size_t), simulation, cmp);
+#else
+    qsort_r(vec, simulation->num_events, sizeof(size_t), cmp, simulation);
+#endif
 
     for (size_t i = 0; i < simulation->num_events; i++) alt[vec[i]] = i;
 
@@ -171,7 +179,7 @@ void run_simulation(struct simulation *simulation) {
 
     alloc_init(simulation->heap_size, simulation->heap);
 
-    struct timeval stop, start;
+    TIME_T start, stop;
 
     for (
         struct event *event = simulation->events;
@@ -182,23 +190,23 @@ void run_simulation(struct simulation *simulation) {
         switch (event->type) {
 
             case MALLOC:
-                gettimeofday(&start, NULL);
+                start = get_time();
                 event->address = alloc_malloc(event->size);
-                gettimeofday(&stop, NULL);
+                stop = get_time();
                 simulation->events[event->alternate].address = event->address;
                 break;
 
             case FREE:
-                gettimeofday(&start, NULL);
+                start = get_time();
                 alloc_free(event->address);
-                gettimeofday(&stop, NULL);
+                stop = get_time();
                 break;
         }
 
         struct stats stats = alloc_stats();
 
         event->metadata = stats.rel_metadata;
-        event->execution = stop.tv_usec - start.tv_usec;
+        event->execution = elapsed_time(start, stop);
         event->fragmentation = stats.rel_ext_frag;
     }
 }

@@ -91,5 +91,7 @@ int main(int argc, char **argv) {
     dump_simulation(simulation);
 
     print_measures(&simulation->measures);
+    printf("Total events: %zu\n", simulation->num_events);
+
     tfree(simulation);
 }
