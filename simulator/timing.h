@@ -23,7 +23,7 @@
         return ((end - start) * tinfo.numer / tinfo.denom) / 1000.0;
     }
 
-#elif __linux
+#elif defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 199309L
 
     #include <time.h>
 
