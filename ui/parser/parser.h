@@ -15,16 +15,25 @@ struct simulation{
     char context[256];
     size_t heap_size;
     size_t time;
+    double mean_fragmentation;
+    double max_fragmentation;
+    double mean_metadata;
+    double mean_malloc_time;
+    double mean_free_time;
     size_t num_events;
 };
+
 
 struct event{
     size_t number;
     char type[256];
-    size_t size;
-    double time;
+    size_t size;       
+    size_t adddress;
+    size_t alternate;
+    double metadata;
+    double execution;
+    double fragmentation;
 };
-
 
 class Parser
 {
@@ -36,7 +45,7 @@ public:
 
     simulation* getSimulation();
     
-    event* getNextEvent();
+    event* getNextEvent(int skeep);
 
     static Parser* INSTANCE;
 
@@ -44,7 +53,8 @@ public:
 private:
 
     void parseSimulation();
-    void parseEvent();
+    event* parseEvent();
+    void skipEvent();
 
     thread* worker;
     mutex mtx;

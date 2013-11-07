@@ -14,11 +14,12 @@ void worker_thread(void* params){
 Parser::Parser(char *path):sim(NULL){
     Parser::INSTANCE = this;
     input = fopen(path, "r");
-    worker = new thread(worker_thread,NULL);
+    //worker = new thread(worker_thread,NULL);
+    parseSimulation();
 }
 
 Parser::~Parser(){
-    worker->join();
+    //worker->join();
     while(!events.empty()){
         free(events.front());
         events.pop();
@@ -35,62 +36,100 @@ void Parser::parse(){
     fclose(input);
 }
 
-
 void Parser::parseSimulation(){
-    lock_guard<mutex> lock(mtx);
+    //lock_guard<mutex> lock(mtx);
     sim = (simulation*) malloc(sizeof(simulation));
     if(int argc=fscanf(input,
-            "simulation = {\n"
-                "\tcontext = %s\n"
-                "\theap_size = %zu\n"
-                "\ttime = %zu\n"
-                "\tnum_events = %zu\n"
-            "}\n",
+            "%s\n"
+            "%zu\n"
+            "%zu\n"
+            "%lf\n"
+            "%lf\n"
+            "%lf\n"
+            "%lf\n"
+            "%lf\n"
+            "%zu\n",
             sim->context,
             &(sim->heap_size),
             &(sim->time),
+            &(sim->mean_fragmentation),
+            &(sim->max_fragmentation),
+            &(sim->mean_metadata),
+            &(sim->mean_malloc_time),
+            &(sim->mean_free_time),
             &(sim->num_events)
-        )!=4)printf("arrchivo malformado(sim)[%d]!\n",argc);
+        )!=9)printf("arrchivo malformado(sim)[%d]!\n",argc);
     cv.notify_one();
 }
 
-void Parser::parseEvent(){
+event* Parser::parseEvent(){
     event* ev = (event*)malloc(sizeof(event));
 
     if(int argc=fscanf(input,
-       "event %zu = {\n"
-           "\ttype = %s\n"
-           "\tsize = %zu\n"
-           "\ttime = %lf\n"
-       "}\n",
+       "%zu\n"
+       "%s\n"
+       "%zu\n"
+       "%zu\n"
+       "%zu\n"
+       "%lf\n"
+       "%lf\n"
+       "%lf\n",
        &(ev->number),
        ev->type,
        &(ev->size),
-       &(ev->time)
-   )!=4)printf("archivo malformado(eve)[%d]!\n",argc);
+       &(ev->adddress),
+       &(ev->alternate),
+       &(ev->metadata),
+       &(ev->execution),
+       &(ev->fragmentation)
+   )!=8)printf("archivo malformado(eve)[%d]!\n",argc);
 
-    {
+   /* {
         lock_guard<mutex> lock(mtx);
         events.push(ev);
         cv.notify_one();
-    }
+    }*/
+    return ev;
 }
 
-event* Parser::getNextEvent(){
-    lock_guard<mutex> lock(mtx);
-    while(events.empty()){
-        cv.wait(mtx);
-    }
-    event* tmp = events.front();
-    events.pop();
-    return tmp;
+void Parser::skipEvent(){
+	fscanf(input,
+       "%*u\n"
+       "%*s\n"
+       "%*u\n"
+       "%*u\n"
+       "%*u\n"
+       "%*f\n"
+       "%*f\n"
+       "%*f\n"
+   );
+}
+
+event* Parser::getNextEvent(int skip){
+    //lock_guard<mutex> lock(mtx);
+    for(int i=0;i<skip;i++){
+		/*while(events.empty()){
+		    cv.wait(mtx);
+		}
+		events.pop();*/
+		skipEvent();
+	}
+	
+	/*while(events.empty()){
+	    cv.wait(mtx);
+	}
+	
+	
+	event* tmp = events.front();
+	events.pop();*/
+    return parseEvent();
 }
 
 simulation* Parser::getSimulation(){
-    lock_guard<mutex> lock(mtx);
+    /*lock_guard<mutex> lock(mtx);
     while(sim == NULL){
         cv.wait(mtx);
-    }
+    }*/
     return sim;
 }
 

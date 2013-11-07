@@ -108,7 +108,7 @@ QToolBar *MainWindow::toolBar()
 
     QWidget *hBox = new QWidget( toolBar );
     
-    d_timerCount = new Counter( hBox, "Time scale", "", 1, 1000, 5 );
+    d_timerCount = new Counter( hBox, "Skip events", "", 0, 100000, 1000 );
     d_timerCount->setValue( 0 );
 
     QHBoxLayout *layout = new QHBoxLayout( hBox );
