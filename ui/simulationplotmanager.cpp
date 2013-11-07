@@ -7,6 +7,9 @@ SimulationPlotManager::SimulationPlotManager(IncrementalPlot* p1, IncrementalPlo
     timeScale( 100.0 )
 {
     
+    
+   	parser = new Parser(simulation_data);
+    
     plot1 = p1;
     plot2 = p2;
     plot3 = p3;
@@ -15,17 +18,25 @@ SimulationPlotManager::SimulationPlotManager(IncrementalPlot* p1, IncrementalPlo
     plot1->setTitle("Block size");
     plot1->setAxisTitle(0,"size");
     plot1->setAxisTitle(2,"time");
+    plot1->setAxisScale(2,0,parser->getSimulation()->time);
+    
     plot2->setTitle("External fragmentation");
     plot2->setAxisTitle(0,"%");
+    plot2->setAxisScale(0,0,1);
     plot2->setAxisTitle(2,"time");
+    plot2->setAxisScale(2,0,parser->getSimulation()->time);
+    
     plot3->setTitle("Internal fragmentation");
     plot3->setAxisTitle(0,"%");
+    plot3->setAxisScale(0,0,1);
     plot3->setAxisTitle(2,"time");
+    plot3->setAxisScale(2,0,parser->getSimulation()->time);
+    
     plot4->setTitle("Time expended");
     plot4->setAxisTitle(0,"time-processing");
     plot4->setAxisTitle(2,"time");
+    plot4->setAxisScale(2,0,parser->getSimulation()->time);
     
-   	parser = new Parser(simulation_data);
 }
 
 
