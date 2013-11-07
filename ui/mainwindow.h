@@ -1,13 +1,13 @@
 #ifndef _MAINWINDOW_H_
 #define _MAINWINDOW_H_ 1
 
-#include "simulationplot.h"
+#include "simulationplotmanager.h"
+#include "incrementalplot.h"
 #include <qmainwindow.h>
 #include <qaction.h>
 
 class QSpinBox;
 class QPushButton;
-class RandomPlot;
 class Counter;
 class QCheckBox;
 
@@ -31,7 +31,8 @@ private:
     QCheckBox *d_symbolType;
     QAction *d_startAction;
     QAction *d_clearAction;
-    SimulationPlot *d_plot;
+    IncrementalPlot *d_plot;
+    SimulationPlotManager* manager;
 };
 
 #endif

@@ -62,7 +62,8 @@ MainWindow::MainWindow(char* simulationData)
     ( void )statusBar();
 #endif
 
-    d_plot = new SimulationPlot( this, simulationData );
+    d_plot = new IncrementalPlot( this );
+    manager = new SimulationPlotManager(d_plot,NULL,NULL,NULL,simulationData);
     const int margin = 4;
     d_plot->setContentsMargins( margin, margin, margin, margin );
 
@@ -107,9 +108,9 @@ QToolBar *MainWindow::toolBar()
 void MainWindow::appendPoints( bool on )
 {
     if ( on )
-        d_plot->append((double)d_timerCount->value());
-    else
-        d_plot->stop();
+        manager->append((double)d_timerCount->value());
+    //else
+        //d_plot->stop();
 }
 
 void MainWindow::showRunning( bool running )

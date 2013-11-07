@@ -16,7 +16,7 @@ HEADERS = \
     scrollzoomer.h \
     scrollbar.h \
     incrementalplot.h \
-    simulationplot.h \
+    simulationplotmanager.h\
     parser/parser.h \
     parser/TinyThread++-1.1/source/tinythread.h \
     parser/TinyThread++-1.1/source/fast_mutex.h
@@ -27,7 +27,7 @@ SOURCES = \
     scrollzoomer.cpp \
     scrollbar.cpp \
     incrementalplot.cpp \
-    simulationplot.cpp \
+    simulationplotmanager.cpp\
     parser/parser.cpp \
     parser/TinyThread++-1.1/source/tinythread.cpp
 
