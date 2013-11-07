@@ -279,7 +279,7 @@ struct stats alloc_stats(void) {
         }
     }
 
-    stats.rel_ext_frag = largest / (double)free_size;
+    stats.rel_ext_frag = free_size ? largest / (double)free_size : 1;
     stats.rel_metadata = meta_size / (double)info->heap_size;
 
     return stats;

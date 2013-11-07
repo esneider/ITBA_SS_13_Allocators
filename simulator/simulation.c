@@ -240,7 +240,7 @@ void analize_simulation(struct simulation *simulation) {
         }
 
         switch (event->type) {
-            case FREE: m->mean_free_time += event->execution; break;
+            case   FREE: m->mean_free_time   += event->execution; break;
             case MALLOC: m->mean_malloc_time += event->execution; break;
         }
     }
