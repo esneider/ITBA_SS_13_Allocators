@@ -1,3 +1,7 @@
+#ifndef __TIMING_H__
+#define __TIMING_H__
+
+
 #ifdef __APPLE__
 
     #include <CoreServices/CoreServices.h>
@@ -41,7 +45,7 @@
         return (end.tv_nsec - start.tv_nsec) / 1000.0;
     }
 
-#else /* !__APPLE__ && !__linux */
+#else
 
     #include <sys/time.h>
 
@@ -60,3 +64,5 @@
     }
 
 #endif
+
+#endif /* __TIMING_H__ */

@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "utils.h"
-#include "talloc.h"
 
 void error(void *root) {
 
     tfree(root);
     printf("There was an error. Aborting.\n");
-    exit(2);
+    exit(1);
 }

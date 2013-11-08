@@ -1,21 +1,28 @@
+ALLOCATOR := lifo
+CFLAGS    := -std=c99 -Wall -Wextra -Wno-overflow -Wno-unused
+LIBS      := -lm
+UNAME     := $(shell uname -s)
 
-LIBS  :=
-UNAME := $(shell uname -s)
 
 ifeq ($(UNAME), Linux)
 	LIBS += -lrt
 endif
 
-ALLOCATOR := lifo
-
 ifdef NAME
 	ALLOCATOR := $(NAME)
 endif
 
-ALL: debug
 
-debug:
-	gcc -std=c99 -Wall -Wextra -Wno-overflow -g -I. *.c allocators/$(ALLOCATOR).c -o run $(LIBS)
+.PHONY: all debug release compile
 
-release:
-	gcc -std=c99 -Wall -Wextra -Wno-overflow -Wno-unused-result -O2 -DNDEBUG -I. *.c allocators/$(ALLOCATOR).c -o run $(LIBS)
+
+all: debug
+
+debug: CFLAGS += -g
+debug: compile
+
+release: CFLAGS += -O2 -DNDEBUG
+release: compile
+
+compile:
+	gcc $(CFLAGS) -I. *.c allocators/$(ALLOCATOR).c -o run $(LIBS)
