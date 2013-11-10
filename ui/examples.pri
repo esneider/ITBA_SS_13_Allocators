@@ -21,16 +21,16 @@ DEPENDPATH  += $${QWT_ROOT}/src
 
 !debug_and_release {
 
-    DESTDIR      = $${PWD}/bin
+    DESTDIR      = $${PWD}/../bin
 }
 else {
     CONFIG(debug, debug|release) {
 
-        DESTDIR      = $${PWD}/bin_debug
+        DESTDIR      = $${PWD}/../bin_debug
     }
     else {
 
-        DESTDIR      = $${PWD}/bin
+        DESTDIR      = $${PWD}/../bin
     }
 }
 

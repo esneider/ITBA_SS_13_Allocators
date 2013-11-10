@@ -25,4 +25,4 @@ release: CFLAGS += -O2 -DNDEBUG
 release: compile
 
 compile:
-	gcc $(CFLAGS) -I. *.c allocators/$(ALLOCATOR).c -o run $(LIBS)
+	gcc $(CFLAGS) -I. *.c allocators/$(ALLOCATOR).c -o ../bin/simulator/run_$(ALLOCATOR) $(LIBS)
