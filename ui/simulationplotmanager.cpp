@@ -58,7 +58,7 @@ void SimulationPlotManager::appendPoint()
 	free(nextEvent);
 	d_eventCount-=eventsToSkip;
     if ( d_eventCount > 0 ){
-		nextEvent = parser->getNextEvent(eventsToSkip);
+		nextEvent = parser->getNextEvent(eventsToSkip-1);
 	    QTimer::singleShot(10,this,SLOT( appendPoint() ));
 	}
 }
