@@ -12,24 +12,24 @@ SimulationPlotManager::SimulationPlotManager(IncrementalPlot* p1, IncrementalPlo
     plot3 = p3;
     plot4 = p4;
     
-    plot1->setTitle("Block size");
-    plot1->setAxisTitle(0,"size");
-    plot1->setAxisTitle(2,"time");
-    plot1->setAxisAutoScale(0,true);
+    plot1->setTitle("Time free");
+    plot1->setAxisTitle(0,"time");
+    plot1->setAxisTitle(2,"event");
+    plot1->setAxisScale(0,0,10);
     
-    plot2->setTitle("Metadata");
-    plot2->setAxisTitle(0,"%");
-    plot2->setAxisScale(0,0,1);
-    plot2->setAxisTitle(2,"time");
+    plot2->setTitle("Time malloc");
+    plot2->setAxisTitle(0,"time");
+    plot2->setAxisScale(0,0,10);
+    plot2->setAxisTitle(2,"event");
     
-    plot3->setTitle("Time expended");
+    plot3->setTitle("Metadata");
     plot3->setAxisTitle(0,"%");
-    plot3->setAxisTitle(2,"time");
-    plot3->setAxisScale(0,0,10);
+    plot3->setAxisTitle(2,"event");
+    plot3->setAxisScale(0,0,1);
     
     plot4->setTitle("External fragmentation");
-    plot4->setAxisTitle(0,"time-processing");
-    plot4->setAxisTitle(2,"%");
+    plot4->setAxisTitle(0,"%");
+    plot4->setAxisTitle(2,"event");
     plot4->setAxisScale(0,0,1);
     
 }
@@ -43,10 +43,17 @@ void SimulationPlotManager::appendPoint()
 	
     //Q_EMIT elapsed( currentTime );
 
-    plot1->appendPoint( QPointF( currentTime, nextEvent->size ) );
-    plot2->appendPoint( QPointF( currentTime, nextEvent->metadata ) );
-    plot3->appendPoint( QPointF( currentTime, nextEvent->execution ) );
-    plot4->appendPoint( QPointF( currentTime, ( 1 - nextEvent->fragmentation) ) );
+    //plot1->appendPoint( QPointF( currentTime, nextEvent->size ) );
+    if(strcmp(nextEvent->type,"free")==0){
+	    plot1->appendPoint( QPointF( currentTime, nextEvent->execution ), curve);
+	}
+	else{
+	    plot2->appendPoint( QPointF( currentTime, nextEvent->execution ), curve);
+	}
+    
+    
+    plot3->appendPoint( QPointF( currentTime, nextEvent->metadata ), curve);
+    plot4->appendPoint( QPointF( currentTime, ( 1 - nextEvent->fragmentation) ), curve);
 
 	free(nextEvent);
 	d_eventCount-=eventsToSkip;
@@ -56,9 +63,14 @@ void SimulationPlotManager::appendPoint()
 	}
 }
 
-void SimulationPlotManager::append(char* simulation_data, int skip)
+void SimulationPlotManager::append(char* simulation_data, int skip, int curv)
 {
+	curve = curv;
 
+	plot1->clearPoints(curve);
+    plot2->clearPoints(curve);
+    plot3->clearPoints(curve);
+    plot4->clearPoints(curve);
 
 	if(parser){
 		delete parser;

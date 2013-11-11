@@ -14,14 +14,15 @@ public:
     IncrementalPlot( QWidget *parent = NULL );
     virtual ~IncrementalPlot();
 
-    void appendPoint( const QPointF & );
-    void clearPoints();
+    void appendPoint( const QPointF & ,int curve);
+    void clearPoints(int curve);
 
 public Q_SLOTS:
     void showSymbols( bool );
 
 private:
-    QwtPlotCurve *d_curve;
+    QwtPlotCurve *d_curve1;
+    QwtPlotCurve *d_curve2;
     QwtPlotDirectPainter *d_directPainter;
 };
 

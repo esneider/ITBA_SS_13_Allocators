@@ -130,6 +130,7 @@ QWidget *MainWindow::Menu()
     
     strategy_combo = new QComboBox(this);
     context_combo = new QComboBox(this);
+    curve_combo = new QComboBox(this);
     
     strategy_combo->addItem("lifo");
     strategy_combo->addItem("best");
@@ -140,6 +141,10 @@ QWidget *MainWindow::Menu()
     context_combo->addItem("skype");
     context_combo->addItem("vim");
     
+    
+    curve_combo->addItem("white");
+    curve_combo->addItem("red");
+    
    	QPushButton* plot_button = new QPushButton("Plot",box);
    	connect(plot_button,SIGNAL(clicked()),this,SLOT(on_plot()));
     
@@ -149,6 +154,7 @@ QWidget *MainWindow::Menu()
     layout->addWidget( d_timerCount );
     layout->addWidget( strategy_combo );
     layout->addWidget( context_combo );
+    layout->addWidget( curve_combo );
     layout->addWidget( plot_button );
     
     return box;
@@ -163,7 +169,6 @@ QToolBar *MainWindow::toolBar()
     setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
 
     d_startAction = new QAction( "New simulation", toolBar );
-    //d_startAction->setCheckable( true );
 
 	toolBar->addAction(d_startAction);
    
@@ -218,14 +223,11 @@ void MainWindow::newSimulation(){
 
 void MainWindow::appendPoints()
 {
-	manager->append("bin/tmp.txt",(double)d_skipCount->value());
+	manager->append("bin/tmp.txt",d_skipCount->value(),curve_combo->currentIndex()+1);
 }
 
 void MainWindow::showRunning( bool running )
 {
-    //d_timerCount->setEnabled( !running );
-    //d_startAction->setChecked( running );->setText( running ? "Stop" : "Start" );
-    //d_startAction->setText("Start simulation");
     d_startAction->setEnabled( running );
 }
 

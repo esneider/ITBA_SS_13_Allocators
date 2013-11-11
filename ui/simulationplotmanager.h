@@ -22,7 +22,7 @@ Q_SIGNALS:
 
 
 public:
-    void append(char*,int);
+    void append(char*,int,int);
 
 
 private Q_SLOTS:
@@ -42,7 +42,8 @@ private:
     
     struct event* nextEvent;
     int currentTime;
-    double eventsToSkip;
+    int eventsToSkip;
+    int curve;
 };
 
 #endif // _SIMULATIONPLOTMANAGER_H_

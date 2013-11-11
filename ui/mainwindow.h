@@ -51,6 +51,7 @@ private:
     
     QComboBox* strategy_combo;
     QComboBox* context_combo;
+    QComboBox* curve_combo;
     
 };
 

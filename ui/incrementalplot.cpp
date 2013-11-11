@@ -43,7 +43,8 @@ public:
 
 IncrementalPlot::IncrementalPlot( QWidget *parent ):
     QwtPlot( parent ),
-    d_curve( NULL )
+    d_curve1( NULL ),
+    d_curve2( NULL )
 {
     d_directPainter = new QwtPlotDirectPainter( this );
 
@@ -55,11 +56,14 @@ IncrementalPlot::IncrementalPlot( QWidget *parent ):
         canvas()->setAttribute( Qt::WA_PaintOnScreen, true );
     }
 
-    d_curve = new QwtPlotCurve( "Test Curve" );
-    d_curve->setData( new CurveData() );
+    d_curve1 = new QwtPlotCurve( "Curve1" );
+    d_curve1->setData( new CurveData() );
+    d_curve2 = new QwtPlotCurve( "Curve2" );
+    d_curve2->setData( new CurveData() );
     showSymbols( true );
 
-    d_curve->attach( this );
+    d_curve1->attach( this );
+    d_curve2->attach( this );
 
     setAutoReplot( false );
     
@@ -79,11 +83,24 @@ IncrementalPlot::IncrementalPlot( QWidget *parent ):
 
 IncrementalPlot::~IncrementalPlot()
 {
-    delete d_curve;
+    delete d_curve1;
+    delete d_curve2;
 }
 
-void IncrementalPlot::appendPoint( const QPointF &point )
+void IncrementalPlot::appendPoint( const QPointF &point , int curve )
 {
+
+	QwtPlotCurve* d_curve;
+	if(curve == 1){
+		d_curve = d_curve1;
+	}
+	else if(curve == 2){
+		d_curve = d_curve2;
+	}
+	else{
+		return;
+	}
+
     CurveData *data = static_cast<CurveData *>( d_curve->data() );
     data->append( point );
 
@@ -116,8 +133,20 @@ void IncrementalPlot::appendPoint( const QPointF &point )
         data->size() - 1, data->size() - 1 );
 }
 
-void IncrementalPlot::clearPoints()
+void IncrementalPlot::clearPoints(int curve)
 {
+
+	QwtPlotCurve* d_curve;
+	if(curve == 1){
+		d_curve = d_curve1;
+	}
+	else if(curve == 2){
+		d_curve = d_curve2;
+	}
+	else{
+		return;
+	}
+
     CurveData *data = static_cast<CurveData *>( d_curve->data() );
     data->clear();
 
@@ -126,10 +155,15 @@ void IncrementalPlot::clearPoints()
 
 void IncrementalPlot::showSymbols( bool on )
 {
-    d_curve->setStyle( QwtPlotCurve::Dot );
-	d_curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
-    d_curve->setSymbol( new QwtSymbol( QwtSymbol::XCross,
+    d_curve1->setStyle( QwtPlotCurve::Dots );
+	d_curve1->setRenderHint( QwtPlotItem::RenderAntialiased, true );
+    d_curve1->setSymbol( new QwtSymbol( QwtSymbol::XCross,
     	Qt::NoBrush, QPen( Qt::white ), QSize( 4, 4 ) ) );
+
+	d_curve2->setStyle( QwtPlotCurve::Dots );
+	d_curve2->setRenderHint( QwtPlotItem::RenderAntialiased, true );
+    d_curve2->setSymbol( new QwtSymbol( QwtSymbol::XCross,
+    	Qt::NoBrush, QPen( Qt::red ), QSize( 4, 4 ) ) );
 
     replot();
 }
