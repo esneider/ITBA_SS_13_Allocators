@@ -7,6 +7,10 @@
 #include <qcheckbox.h>
 #include <qwhatsthis.h>
 #include <qpixmap.h>
+#include <QFormLayout>
+#include <QPushButton>
+
+#include <sys/wait.h>
 
 #include "mainwindow.h"
 #include "start.xpm"
@@ -56,7 +60,7 @@ private:
     QSpinBox *d_counter;
 };
 
-MainWindow::MainWindow(char* simulationData)
+MainWindow::MainWindow()
 {
     addToolBar( toolBar() );
 #ifndef QT_NO_STATUSBAR
@@ -76,20 +80,79 @@ MainWindow::MainWindow(char* simulationData)
     layout->addWidget( d_plot4 ,1,1);
     
     
-    manager = new SimulationPlotManager(d_plot1,d_plot2,d_plot3,d_plot4,simulationData);
+    manager = new SimulationPlotManager(d_plot1,d_plot2,d_plot3,d_plot4);
+    
+    selector.addWidget(Menu());
+    selector.addWidget(box);
+    
+    QWidget* loading = new QLabel("Calculationg...",this);
+    
+    selector.addWidget(loading);
+    
+    QWidget* error = new QLabel("ERROR",this);
+    
+    selector.addWidget(error);
+    
+    
+    connect(this,SIGNAL(changeWindow(int)),&selector,SLOT(setCurrentIndex(int)));
+    
+    changeWindow(0);
+    
     const int margin = 4;
     d_plot1->setContentsMargins( margin, margin, margin, margin );
     d_plot2->setContentsMargins( margin, margin, margin, margin );
     d_plot3->setContentsMargins( margin, margin, margin, margin );
     d_plot4->setContentsMargins( margin, margin, margin, margin );
 
-    setCentralWidget( box );
+    setCentralWidget( &selector );
 
-    connect( d_startAction, SIGNAL( toggled( bool ) ), this, SLOT( appendPoints( bool ) ) );
+    connect( d_startAction, SIGNAL( triggered() ), this, SLOT( newSimulation() ) );
     connect( manager, SIGNAL( running( bool ) ), this, SLOT( showRunning( bool ) ) );
     connect( manager, SIGNAL( elapsed( int ) ), this, SLOT( showElapsed( int ) ) );
     
     setContextMenuPolicy( Qt::NoContextMenu );
+}
+
+QWidget *MainWindow::Menu()
+{
+	QWidget *box =new QWidget(this);
+	
+	
+    d_skipCount = new Counter( box, "Skip events", "", 0, 100000, 1000 );
+    d_skipCount->setValue( 0 );
+    
+    d_heapsizeCount = new Counter( box, "Heap size", "", 1000000, 10000000, 1000000 );
+    d_heapsizeCount->setValue( 1000000 );
+    
+    d_timerCount = new Counter( box, "Simulation time", "", 600, 60000, 100 );
+    d_timerCount->setValue( 600 );
+	
+    
+    strategy_combo = new QComboBox(this);
+    context_combo = new QComboBox(this);
+    
+    strategy_combo->addItem("lifo");
+    strategy_combo->addItem("best");
+    
+    context_combo->addItem("excel");
+    context_combo->addItem("photoshop");
+    context_combo->addItem("safari");
+    context_combo->addItem("skype");
+    context_combo->addItem("vim");
+    
+   	QPushButton* plot_button = new QPushButton("Plot",box);
+   	connect(plot_button,SIGNAL(clicked()),this,SLOT(on_plot()));
+    
+    QFormLayout *layout = new QFormLayout( box );
+    layout->addWidget( d_skipCount );
+    layout->addWidget( d_heapsizeCount );
+    layout->addWidget( d_timerCount );
+    layout->addWidget( strategy_combo );
+    layout->addWidget( context_combo );
+    layout->addWidget( plot_button );
+    
+    return box;
+    
 }
 
 QToolBar *MainWindow::toolBar()
@@ -99,42 +162,71 @@ QToolBar *MainWindow::toolBar()
     toolBar->setAllowedAreas( Qt::TopToolBarArea | Qt::BottomToolBarArea );
     setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
 
-    d_startAction = new QAction( QPixmap( start_xpm ), "Start", toolBar );
-    d_startAction->setCheckable( true );
+    d_startAction = new QAction( "New simulation", toolBar );
+    //d_startAction->setCheckable( true );
 
-    toolBar->addAction( d_startAction );
-
-    setIconSize( QSize( 22, 22 ) );
-
-    QWidget *hBox = new QWidget( toolBar );
-    
-    d_timerCount = new Counter( hBox, "Skip events", "", 0, 100000, 1000 );
-    d_timerCount->setValue( 0 );
-
-    QHBoxLayout *layout = new QHBoxLayout( hBox );
-    layout->addWidget( d_timerCount );
-
-    showRunning( false );
-
-    toolBar->addWidget( hBox );
-
+	toolBar->addAction(d_startAction);
+   
     return toolBar;
 }
 
-void MainWindow::appendPoints( bool on )
+void MainWindow::on_plot(){
+	changeWindow(2);
+	
+	bool ok = true;
+	
+	pid_t pID = fork();
+	
+	if(pID == 0){
+		char program[256];
+		char sample[256];
+		char heapsize[256];
+		char simtime[256];
+		
+		sprintf(program,"bin/simulator/run_%s",strategy_combo->currentText().toStdString().c_str());
+		sprintf(sample,"context/samples/%s.txt",context_combo->currentText().toStdString().c_str());
+		sprintf(heapsize,"%d",d_heapsizeCount->value());
+		sprintf(simtime,"%d",d_timerCount->value());
+		
+		printf("%s -c %s ...\n",program,sample);
+	
+		execlp(program ,program,"-c",sample,"-h",heapsize, "-t",simtime,"-o","bin/tmp.txt",NULL);
+	}
+	else if(pID < 0){
+		changeWindow(3);
+		ok = false;
+	}
+	
+	int success;
+	waitpid(pID,&success,0);
+	if(WEXITSTATUS(success)){
+		changeWindow(3);
+		ok = false;
+	}
+	
+	
+	if(ok){
+		changeWindow(1);
+		appendPoints();
+	}
+}
+
+
+void MainWindow::newSimulation(){
+	changeWindow(0);
+}
+
+void MainWindow::appendPoints()
 {
-    if ( on )
-        manager->append((double)d_timerCount->value());
-    //else
-        //d_plot->stop();
+	manager->append("bin/tmp.txt",(double)d_skipCount->value());
 }
 
 void MainWindow::showRunning( bool running )
 {
-    d_timerCount->setEnabled( !running );
+    //d_timerCount->setEnabled( !running );
     //d_startAction->setChecked( running );->setText( running ? "Stop" : "Start" );
-    d_startAction->setText("Start simulation");
-    d_startAction->setEnabled( !running );
+    //d_startAction->setText("Start simulation");
+    d_startAction->setEnabled( running );
 }
 
 void MainWindow::showElapsed( int ms )

@@ -13,7 +13,7 @@ class SimulationPlotManager: public QObject
     Q_OBJECT
     
 public:
-    SimulationPlotManager(IncrementalPlot* plot1, IncrementalPlot* plot2, IncrementalPlot* plot3, IncrementalPlot* plot4,char* simulation_data );
+    SimulationPlotManager(IncrementalPlot* plot1, IncrementalPlot* plot2, IncrementalPlot* plot3, IncrementalPlot* plot4);
 
 
 Q_SIGNALS:
@@ -22,7 +22,7 @@ Q_SIGNALS:
 
 
 public:
-    void append(int skip);
+    void append(char*,int);
 
 
 private Q_SLOTS:

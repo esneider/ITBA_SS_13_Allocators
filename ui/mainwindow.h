@@ -5,6 +5,8 @@
 #include "incrementalplot.h"
 #include <qmainwindow.h>
 #include <qaction.h>
+#include <QStackedWidget>
+#include <QComboBox>
 
 class QSpinBox;
 class QPushButton;
@@ -15,18 +17,26 @@ class MainWindow: public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindow(char* simulationData);
+    MainWindow();
+
+
+Q_SIGNALS:
+    void changeWindow( int );
 
 private Q_SLOTS:
     void showRunning( bool );
-    void appendPoints( bool );
     void showElapsed( int );
+    void on_plot();
+    void newSimulation();
 
 private:
+    void appendPoints();
     QToolBar *toolBar();
+	QWidget* Menu();
 
 private:
-    Counter *d_randomCount;
+    Counter *d_skipCount;
+    Counter *d_heapsizeCount;
     Counter *d_timerCount;
     QCheckBox *d_symbolType;
     QAction *d_startAction;
@@ -36,6 +46,12 @@ private:
     IncrementalPlot *d_plot3;
     IncrementalPlot *d_plot4;
     SimulationPlotManager* manager;
+    
+    QStackedWidget selector;
+    
+    QComboBox* strategy_combo;
+    QComboBox* context_combo;
+    
 };
 
 #endif

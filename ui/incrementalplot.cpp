@@ -126,7 +126,7 @@ void IncrementalPlot::clearPoints()
 
 void IncrementalPlot::showSymbols( bool on )
 {
-    d_curve->setStyle( QwtPlotCurve::Lines );
+    d_curve->setStyle( QwtPlotCurve::Dot );
 	d_curve->setRenderHint( QwtPlotItem::RenderAntialiased, true );
     d_curve->setSymbol( new QwtSymbol( QwtSymbol::XCross,
     	Qt::NoBrush, QPen( Qt::white ), QSize( 4, 4 ) ) );

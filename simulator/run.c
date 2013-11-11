@@ -94,4 +94,6 @@ int main(int argc, char **argv) {
     printf("Total events: %zu\n", simulation->num_events);
 
     tfree(simulation);
+    
+    return EXIT_SUCCESS;
 }
