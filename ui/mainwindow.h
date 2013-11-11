@@ -28,9 +28,10 @@ private Q_SLOTS:
     void showElapsed( int );
     void on_plot();
     void newSimulation();
+    void appendPoints();
+    void waitProgram();
 
 private:
-    void appendPoints();
     QToolBar *toolBar();
 	QWidget* Menu();
 
@@ -52,6 +53,8 @@ private:
     QComboBox* strategy_combo;
     QComboBox* context_combo;
     QComboBox* curve_combo;
+    
+    pid_t pID;
     
 };
 

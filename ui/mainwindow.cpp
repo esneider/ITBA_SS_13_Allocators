@@ -9,6 +9,7 @@
 #include <qpixmap.h>
 #include <QFormLayout>
 #include <QPushButton>
+#include <qtimer.h>
 
 #include <sys/wait.h>
 
@@ -85,7 +86,7 @@ MainWindow::MainWindow()
     selector.addWidget(Menu());
     selector.addWidget(box);
     
-    QWidget* loading = new QLabel("Calculationg...",this);
+    QWidget* loading = new QLabel("Calculating...",this);
     
     selector.addWidget(loading);
     
@@ -178,9 +179,7 @@ QToolBar *MainWindow::toolBar()
 void MainWindow::on_plot(){
 	changeWindow(2);
 	
-	bool ok = true;
-	
-	pid_t pID = fork();
+	pID = fork();
 	
 	if(pID == 0){
 		char program[256];
@@ -199,21 +198,26 @@ void MainWindow::on_plot(){
 	}
 	else if(pID < 0){
 		changeWindow(3);
-		ok = false;
 	}
 	
+	QTimer::singleShot(10,this,SLOT( waitProgram() ));
+}
+
+void MainWindow::waitProgram(){
 	int success;
-	waitpid(pID,&success,0);
+	waitpid(pID,&success,WNOHANG);
+	
+	if(!WIFEXITED(success)){
+		QTimer::singleShot(10,this,SLOT( waitProgram() ));
+		return;
+	}
+	
 	if(WEXITSTATUS(success)){
 		changeWindow(3);
-		ok = false;
+		return;
 	}
 	
-	
-	if(ok){
-		changeWindow(1);
-		appendPoints();
-	}
+	QTimer::singleShot(10,this,SLOT( appendPoints() ));
 }
 
 
@@ -223,6 +227,7 @@ void MainWindow::newSimulation(){
 
 void MainWindow::appendPoints()
 {
+	changeWindow(1);
 	manager->append("bin/tmp.txt",d_skipCount->value(),curve_combo->currentIndex()+1);
 }
 
