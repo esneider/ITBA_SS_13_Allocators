@@ -12,6 +12,7 @@ class QSpinBox;
 class QPushButton;
 class Counter;
 class QCheckBox;
+class QLabel;
 
 class MainWindow: public QMainWindow
 {
@@ -34,11 +35,13 @@ private Q_SLOTS:
 private:
     QToolBar *toolBar();
 	QWidget* Menu();
+	QWidget* SingleMenu(int color);
+	QWidget* CommonMenu();
 
 private:
-    Counter *d_skipCount;
-    Counter *d_heapsizeCount;
-    Counter *d_timerCount;
+    Counter* d_skipCount;
+    Counter* d_heapsizeCount;
+    Counter* d_timerCount;
     QCheckBox *d_symbolType;
     QAction *d_startAction;
     QAction *d_clearAction;
@@ -50,11 +53,15 @@ private:
     
     QStackedWidget selector;
     
-    QComboBox* strategy_combo;
-    QComboBox* context_combo;
-    QComboBox* curve_combo;
+    QComboBox* strategy_combo[2];
+    QComboBox* context_combo[2];
     
-    pid_t pID;
+    QLabel* d_title;
+    
+    pid_t pID1;
+    pid_t pID2;
+	int success1;
+	int success2;
     
 };
 

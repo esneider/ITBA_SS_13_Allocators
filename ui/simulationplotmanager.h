@@ -22,7 +22,7 @@ Q_SIGNALS:
 
 
 public:
-    void append(char*,int,int);
+    void append(char* simulation_data1,char* simulation_data2, int skip);
 
 
 private Q_SLOTS:
@@ -38,12 +38,15 @@ private:
     QTimer *d_timer;
     int d_eventCount;
 
-    Parser* parser;
+    Parser* parser1;
+    Parser* parser2;
     
-    struct event* nextEvent;
+    struct event* nextEvent1;
+    struct event* nextEvent2;
     int currentTime;
     int eventsToSkip;
-    int curve;
+    int curve1;
+    int curve2;
 };
 
 #endif // _SIMULATIONPLOTMANAGER_H_

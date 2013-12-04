@@ -4,7 +4,10 @@
 SimulationPlotManager::SimulationPlotManager(IncrementalPlot* p1, IncrementalPlot* p2, IncrementalPlot* p3, IncrementalPlot* p4 ):
     d_eventCount( 0 ),
     currentTime( 0 ),
-    parser( 0 )
+    parser1( 0 ),
+    parser2( 0 ),
+    curve1(1),
+    curve2(2)
 {
     
     plot1 = p1;
@@ -39,49 +42,71 @@ SimulationPlotManager::SimulationPlotManager(IncrementalPlot* p1, IncrementalPlo
 void SimulationPlotManager::appendPoint()
 {
 
-	currentTime= nextEvent->number;
+	currentTime= nextEvent1->number;
 	
     //Q_EMIT elapsed( currentTime );
 
     //plot1->appendPoint( QPointF( currentTime, nextEvent->size ) );
-    if(strcmp(nextEvent->type,"free")==0){
-	    plot1->appendPoint( QPointF( currentTime, nextEvent->execution ), curve);
+    if(nextEvent1 !=NULL){
+		currentTime= nextEvent1->number;
+		if(strcmp(nextEvent1->type,"free")==0){
+			plot1->appendPoint( QPointF( currentTime, nextEvent1->execution ), curve1);
+		}
+		else{
+			plot2->appendPoint( QPointF( currentTime, nextEvent1->execution ), curve1);
+		}
+		plot3->appendPoint( QPointF( currentTime, nextEvent1->metadata ), curve1);
+		plot4->appendPoint( QPointF( currentTime, ( 1 - nextEvent1->fragmentation) ), curve1);
+		free(nextEvent1);
 	}
-	else{
-	    plot2->appendPoint( QPointF( currentTime, nextEvent->execution ), curve);
+	if(nextEvent2 !=NULL){
+		currentTime= nextEvent2->number;
+		if(strcmp(nextEvent2->type,"free")==0){
+			plot1->appendPoint( QPointF( currentTime, nextEvent2->execution ), curve2);
+		}
+		else{
+			plot2->appendPoint( QPointF( currentTime, nextEvent2->execution ), curve2);
+		}
+		plot3->appendPoint( QPointF( currentTime, nextEvent2->metadata ), curve2);
+		plot4->appendPoint( QPointF( currentTime, ( 1 - nextEvent2->fragmentation) ), curve2);
+		free(nextEvent2);
 	}
-    
-    
-    plot3->appendPoint( QPointF( currentTime, nextEvent->metadata ), curve);
-    plot4->appendPoint( QPointF( currentTime, ( 1 - nextEvent->fragmentation) ), curve);
 
-	free(nextEvent);
+
 	d_eventCount-=eventsToSkip;
     if ( d_eventCount > 0 ){
-		nextEvent = parser->getNextEvent(eventsToSkip-1);
+		nextEvent1 = parser1->getNextEvent(eventsToSkip-1);
+		nextEvent2 = parser2->getNextEvent(eventsToSkip-1);
 	    QTimer::singleShot(10,this,SLOT( appendPoint() ));
 	}
 }
 
-void SimulationPlotManager::append(char* simulation_data, int skip, int curv)
+void SimulationPlotManager::append(char* simulation_data1,char* simulation_data2, int skip)
 {
-	curve = curv;
+	plot1->clearPoints(curve1);
+    plot2->clearPoints(curve1);
+    plot3->clearPoints(curve1);
+    plot4->clearPoints(curve1);
+	plot1->clearPoints(curve2);
+    plot2->clearPoints(curve2);
+    plot3->clearPoints(curve2);
+    plot4->clearPoints(curve2);
 
-	plot1->clearPoints(curve);
-    plot2->clearPoints(curve);
-    plot3->clearPoints(curve);
-    plot4->clearPoints(curve);
-
-	if(parser){
-		delete parser;
+	if(parser1){
+		delete parser1;
 	}
-   	parser = new Parser(simulation_data);
+   	parser1 = new Parser(simulation_data1);
+   	
+   	if(parser2){
+		delete parser2;
+	}
+   	parser2 = new Parser(simulation_data2);
    	
    	
-    plot1->setAxisScale(2,0,parser->getSimulation()->num_events);
-    plot2->setAxisScale(2,0,parser->getSimulation()->num_events);
-    plot3->setAxisScale(2,0,parser->getSimulation()->num_events);
-    plot4->setAxisScale(2,0,parser->getSimulation()->num_events);
+    plot1->setAxisScale(2,0,max(parser1->getSimulation()->num_events,parser2->getSimulation()->num_events));
+    plot2->setAxisScale(2,0,max(parser1->getSimulation()->num_events,parser2->getSimulation()->num_events));
+    plot3->setAxisScale(2,0,max(parser1->getSimulation()->num_events,parser2->getSimulation()->num_events));
+    plot4->setAxisScale(2,0,max(parser1->getSimulation()->num_events,parser2->getSimulation()->num_events));
     plot1->replot();
     plot2->replot();
     plot3->replot();
@@ -92,8 +117,9 @@ void SimulationPlotManager::append(char* simulation_data, int skip, int curv)
 	
     Q_EMIT running( true );
     
-    d_eventCount = parser->getSimulation()->num_events;
+    d_eventCount = max(parser1->getSimulation()->num_events,parser2->getSimulation()->num_events);
 
-	nextEvent = parser->getNextEvent(0);
+	nextEvent1 = parser1->getNextEvent(0);
+	nextEvent2 = parser2->getNextEvent(0);
 	QTimer::singleShot(10,this,SLOT( appendPoint() ));
 }

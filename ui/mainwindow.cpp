@@ -114,8 +114,34 @@ MainWindow::MainWindow()
     setContextMenuPolicy( Qt::NoContextMenu );
 }
 
-QWidget *MainWindow::Menu()
-{
+QWidget *MainWindow::SingleMenu(int color){
+
+	QWidget *box =new QWidget(this);
+	
+    
+    strategy_combo[color] = new QComboBox(this);
+    context_combo[color] = new QComboBox(this);
+    
+    strategy_combo[color]->addItem("lifo");
+    strategy_combo[color]->addItem("best");
+    
+    context_combo[color]->addItem("excel");
+    context_combo[color]->addItem("photoshop");
+    context_combo[color]->addItem("safari");
+    context_combo[color]->addItem("skype");
+    context_combo[color]->addItem("vim");
+    
+    QFormLayout *layout = new QFormLayout( box );
+	layout->addWidget( new QLabel( color==0?"parameters white line:":"parameters red line:", this ) );
+    layout->addWidget( strategy_combo[color] );
+    layout->addWidget( context_combo[color] );
+    
+    return box;
+
+}
+
+QWidget *MainWindow::CommonMenu(){
+
 	QWidget *box =new QWidget(this);
 	
 	
@@ -127,38 +153,36 @@ QWidget *MainWindow::Menu()
     
     d_timerCount = new Counter( box, "Simulation time", "", 600, 60000, 100 );
     d_timerCount->setValue( 600 );
-	
-    
-    strategy_combo = new QComboBox(this);
-    context_combo = new QComboBox(this);
-    curve_combo = new QComboBox(this);
-    
-    strategy_combo->addItem("lifo");
-    strategy_combo->addItem("best");
-    
-    context_combo->addItem("excel");
-    context_combo->addItem("photoshop");
-    context_combo->addItem("safari");
-    context_combo->addItem("skype");
-    context_combo->addItem("vim");
-    
-    
-    curve_combo->addItem("white");
-    curve_combo->addItem("red");
-    
-   	QPushButton* plot_button = new QPushButton("Plot",box);
-   	connect(plot_button,SIGNAL(clicked()),this,SLOT(on_plot()));
     
     QFormLayout *layout = new QFormLayout( box );
     layout->addWidget( d_skipCount );
     layout->addWidget( d_heapsizeCount );
     layout->addWidget( d_timerCount );
-    layout->addWidget( strategy_combo );
-    layout->addWidget( context_combo );
-    layout->addWidget( curve_combo );
-    layout->addWidget( plot_button );
     
     return box;
+
+}
+
+QWidget *MainWindow::Menu()
+{
+	QWidget *box1 =new QWidget(this);
+	QWidget *box2 =new QWidget(this);
+	
+	QHBoxLayout * layout2 = new QHBoxLayout(box2);
+	
+	layout2->addWidget(SingleMenu(0));
+	layout2->addWidget(SingleMenu(1));
+	
+   	QPushButton* plot_button = new QPushButton("Plot",box2);
+   	connect(plot_button,SIGNAL(clicked()),this,SLOT(on_plot()));
+    
+    QVBoxLayout * layout1 = new QVBoxLayout(box1);
+    
+    layout1->addWidget(CommonMenu());
+    layout1->addWidget(box2);
+    layout1->addWidget(plot_button);
+    
+    return box1;
     
 }
 
@@ -172,6 +196,8 @@ QToolBar *MainWindow::toolBar()
     d_startAction = new QAction( "New simulation", toolBar );
 
 	toolBar->addAction(d_startAction);
+    d_title = new QLabel( this );
+    toolBar->addWidget( d_title );
    
     return toolBar;
 }
@@ -179,40 +205,64 @@ QToolBar *MainWindow::toolBar()
 void MainWindow::on_plot(){
 	changeWindow(2);
 	
-	pID = fork();
+	pID1 = fork();
 	
-	if(pID == 0){
+	if(pID1 == 0){
 		char program[256];
 		char sample[256];
 		char heapsize[256];
 		char simtime[256];
 		
-		sprintf(program,"bin/simulator/run_%s",strategy_combo->currentText().toStdString().c_str());
-		sprintf(sample,"context/samples/%s.txt",context_combo->currentText().toStdString().c_str());
+		sprintf(program,"bin/simulator/run_%s",strategy_combo[0]->currentText().toStdString().c_str());
+		sprintf(sample,"context/samples/%s.txt",context_combo[0]->currentText().toStdString().c_str());
 		sprintf(heapsize,"%d",d_heapsizeCount->value());
 		sprintf(simtime,"%d",d_timerCount->value());
 		
 		printf("%s -c %s ...\n",program,sample);
 	
-		execlp(program ,program,"-c",sample,"-h",heapsize, "-t",simtime,"-o","bin/tmp.txt",NULL);
+		execlp(program ,program,"-c",sample,"-h",heapsize, "-t",simtime,"-o","bin/tmp1.txt",NULL);
 	}
-	else if(pID < 0){
+	else if(pID1 < 0){
 		changeWindow(3);
 	}
+	
+	pID2 = fork();
+	
+	if(pID2 == 0){
+		char program[256];
+		char sample[256];
+		char heapsize[256];
+		char simtime[256];
+		
+		sprintf(program,"bin/simulator/run_%s",strategy_combo[1]->currentText().toStdString().c_str());
+		sprintf(sample,"context/samples/%s.txt",context_combo[1]->currentText().toStdString().c_str());
+		sprintf(heapsize,"%d",d_heapsizeCount->value());
+		sprintf(simtime,"%d",d_timerCount->value());
+		
+		printf("%s -c %s ...\n",program,sample);
+	
+		execlp(program ,program,"-c",sample,"-h",heapsize, "-t",simtime,"-o","bin/tmp2.txt",NULL);
+	}
+	else if(pID2 < 0){
+		changeWindow(3);
+	}
+	
+	success1 = -54;
+	success2 = -54;
 	
 	QTimer::singleShot(10,this,SLOT( waitProgram() ));
 }
 
 void MainWindow::waitProgram(){
-	int success;
-	waitpid(pID,&success,WNOHANG);
+	if(success1 == -54)waitpid(pID1,&success1,WNOHANG);
+	if(success2 == -54)waitpid(pID2,&success2,WNOHANG);
 	
-	if(!WIFEXITED(success)){
+	if(!WIFEXITED(success1) || !WIFEXITED(success2)){
 		QTimer::singleShot(10,this,SLOT( waitProgram() ));
 		return;
 	}
 	
-	if(WEXITSTATUS(success)){
+	if(WEXITSTATUS(success1) && WEXITSTATUS(success2)){
 		changeWindow(3);
 		return;
 	}
@@ -228,7 +278,11 @@ void MainWindow::newSimulation(){
 void MainWindow::appendPoints()
 {
 	changeWindow(1);
-	manager->append("bin/tmp.txt",d_skipCount->value(),curve_combo->currentIndex()+1);
+	
+	char title[512];
+	sprintf(title,"white: %s_%s ; red: %s_%s",strategy_combo[0]->currentText().toStdString().c_str(),context_combo[0]->currentText().toStdString().c_str(),strategy_combo[1]->currentText().toStdString().c_str(),context_combo[1]->currentText().toStdString().c_str());
+	d_title->setText(title);
+	manager->append("bin/tmp1.txt","bin/tmp2.txt",d_skipCount->value());
 }
 
 void MainWindow::showRunning( bool running )

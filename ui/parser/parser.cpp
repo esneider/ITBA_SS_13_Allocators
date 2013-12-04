@@ -82,8 +82,10 @@ event* Parser::parseEvent(){
        &(ev->metadata),
        &(ev->execution),
        &(ev->fragmentation)
-   )!=8)printf("archivo malformado(eve)[%d]!\n",argc);
-
+   )!=8){
+		free(ev);
+		return NULL;
+	}
    /* {
         lock_guard<mutex> lock(mtx);
         events.push(ev);
