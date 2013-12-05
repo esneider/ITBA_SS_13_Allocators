@@ -1,0 +1,18 @@
+digraph markov{
+
+slow
+medium
+fast
+slow -> slow [label=0.35]
+slow -> medium [label=0.5]
+slow -> fast [label=0.15]
+
+medium -> slow [label=0.19]
+medium -> medium [label=0.52]
+medium -> fast [label=0.29]
+
+
+fast -> medium [label=0.07]
+fast -> fast [label=0.93]
+
+}
