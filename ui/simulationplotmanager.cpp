@@ -18,17 +18,17 @@ SimulationPlotManager::SimulationPlotManager(IncrementalPlot* p1, IncrementalPlo
     plot1->setTitle("Time free");
     plot1->setAxisTitle(0,"time");
     plot1->setAxisTitle(2,"event");
-    plot1->setAxisScale(0,0,10);
+    plot1->setAxisScale(0,0,25);
     
     plot2->setTitle("Time malloc");
     plot2->setAxisTitle(0,"time");
-    plot2->setAxisScale(0,0,10);
+    plot2->setAxisScale(0,0,25);
     plot2->setAxisTitle(2,"event");
     
     plot3->setTitle("Metadata");
     plot3->setAxisTitle(0,"%");
     plot3->setAxisTitle(2,"event");
-    plot3->setAxisScale(0,0,1);
+    plot3->setAxisScale(0,0,0.1);
     
     plot4->setTitle("External fragmentation");
     plot4->setAxisTitle(0,"%");
