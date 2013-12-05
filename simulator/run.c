@@ -73,7 +73,8 @@ int main(int argc, char **argv) {
     printf("Loading context...\n");
     struct context *context = load_context(simulation, simulation->context);
 
-
+	srand(time(0));
+	
     /* Simulation */
 
     printf("Loading simulation...\n");

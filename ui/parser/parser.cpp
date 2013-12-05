@@ -1,6 +1,5 @@
 #include "parser.h"
-#include <stdio.h>
-#include <stdlib.h>
+
 
 Parser* Parser::INSTANCE = NULL;
 
@@ -59,7 +58,7 @@ void Parser::parseSimulation(){
             &(sim->mean_free_time),
             &(sim->num_events)
         )!=9)printf("arrchivo malformado(sim)[%d]!\n",argc);
-    cv.notify_one();
+    //cv.notify_one();
 }
 
 event* Parser::parseEvent(){

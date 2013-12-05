@@ -3,13 +3,15 @@
 
 //#include <mutex>
 #include <queue>
+#include <stdio.h>
+#include <stdlib.h>
 //#include <thread>
 //#include <condition_variable>
-#include <tinythread.h>
-#include <fast_mutex.h>
+//#include <tinythread.h>
+//#include <fast_mutex.h>
 
 using namespace std;
-using namespace tthread;
+//using namespace tthread;
 
 struct simulation{
     char context[256];
@@ -56,9 +58,9 @@ private:
     event* parseEvent();
     void skipEvent();
 
-    thread* worker;
-    mutex mtx;
-    condition_variable cv;
+    //thread* worker;
+    //mutex mtx;
+    //condition_variable cv;
 
     FILE* input;
 

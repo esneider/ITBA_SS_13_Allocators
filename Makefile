@@ -1,4 +1,4 @@
-TARGETS = bin/simulator/run_lifo bin/simulator/run_best bin/simuGui
+TARGETS = bin/simulator/run_lifo bin/simulator/run_best bin/simuGui bin/analyze_data
 
 all: $(TARGETS)
 
@@ -10,6 +10,9 @@ bin/simulator/run_best:
 
 bin/simuGui:
 	cd ui && qmake && make && cd ..
+	
+bin/analyze_data:
+	cd "samples/analyze data" && make && cd ../..
 	
 clean:
 	rm $(TARGETS); cd ui && make clean && cd ..
