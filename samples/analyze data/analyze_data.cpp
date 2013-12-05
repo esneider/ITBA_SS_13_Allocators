@@ -8,16 +8,18 @@
 
 int main(int argc, char **argv) {
 
-	if(argc<3){
-		printf("usage: analyze_data [imputfile1] [imputfile2] ...");
+	if(argc<4){
+		printf("usage: analyze_data output{1:mean frag; 2: max frag; 3: mean metadata; 4:mean malloc time; 5: mean free time 6: all} [imputfile1] [imputfile2] ...");
 		exit(2);
 	}
 	
-	long double* mean_frag  = new long double[argc-1];
-	long double* max_frag = new long double[argc-1];
-	long double* mean_meta = new long double[argc-1];
-	long double* mean_malloc_time = new long double[argc-1];
-	long double* mean_free_time = new long double[argc-1];
+	int num_tests = argc -2;
+	
+	long double* mean_frag  = new long double[num_tests];
+	long double* max_frag = new long double[num_tests];
+	long double* mean_meta = new long double[num_tests];
+	long double* mean_malloc_time = new long double[num_tests];
+	long double* mean_free_time = new long double[num_tests];
 
 
 	
@@ -40,7 +42,7 @@ int main(int argc, char **argv) {
 	long double std_mean_free_time = 0;
 	
 
-	for(int i =0; i < argc-1;i++){
+	for(int i =0; i < num_tests;i++){
 		mean_frag[i] = 0;
 		max_frag[i] = 1;
 		mean_meta[i] = 0;
@@ -48,7 +50,7 @@ int main(int argc, char **argv) {
 		mean_free_time[i] = 0;
 
 
-		Parser* parser = new Parser(argv[i+1]);
+		Parser* parser = new Parser(argv[i+2]);
 
 		int num_events = parser->getSimulation()->num_events;
 		
@@ -74,22 +76,22 @@ int main(int argc, char **argv) {
 				"\tmean_meta = %LF\n"
 				"\tmean_malloc_time = %LF\n"
 				"\tmean_free_time = %LF\n"
-		"}\n",argv[i+1],(1-mean_frag[i]),(1-max_frag[i]),mean_meta[i],mean_malloc_time[i],mean_free_time[i]);
+		"}\n",argv[i+2],(1-mean_frag[i]),(1-max_frag[i]),mean_meta[i],mean_malloc_time[i],mean_free_time[i]);
 		*/
 		
-		mean_mean_frag += mean_frag[i]/(double)(argc-1);
-		mean_max_frag += max_frag[i]/(double)(argc-1);
-		mean_mean_meta += mean_meta[i]/(double)(argc-1);
-		mean_mean_malloc_time += mean_malloc_time[i]/(double)(argc-1);
-		mean_mean_free_time += mean_free_time[i]/(double)(argc-1);
+		mean_mean_frag += mean_frag[i]/(double)(num_tests);
+		mean_max_frag += max_frag[i]/(double)(num_tests);
+		mean_mean_meta += mean_meta[i]/(double)(num_tests);
+		mean_mean_malloc_time += mean_malloc_time[i]/(double)(num_tests);
+		mean_mean_free_time += mean_free_time[i]/(double)(num_tests);
 	}
 	
-	for(int i =0; i < argc-1;i++){
-		var_mean_frag += pow(mean_frag[i]-mean_mean_frag,2)/(double)(argc-2);
-		var_max_frag += pow(max_frag[i]-mean_max_frag,2)/(double)(argc-2);
-		var_mean_meta += pow(mean_meta[i]-mean_mean_meta,2)/(double)(argc-2);
-		var_mean_malloc_time += pow(mean_malloc_time[i]-mean_mean_malloc_time,2)/(double)(argc-2);
-		var_mean_free_time += pow(mean_free_time[i]-mean_mean_free_time,2)/(double)(argc-2);
+	for(int i =0; i < num_tests;i++){
+		var_mean_frag += pow(mean_frag[i]-mean_mean_frag,2)/(double)(num_tests-1);
+		var_max_frag += pow(max_frag[i]-mean_max_frag,2)/(double)(num_tests-1);
+		var_mean_meta += pow(mean_meta[i]-mean_mean_meta,2)/(double)(num_tests-1);
+		var_mean_malloc_time += pow(mean_malloc_time[i]-mean_mean_malloc_time,2)/(double)(num_tests-1);
+		var_mean_free_time += pow(mean_free_time[i]-mean_mean_free_time,2)/(double)(num_tests-1);
 	}
 	
 	std_mean_frag = sqrt(var_mean_frag);
@@ -98,18 +100,57 @@ int main(int argc, char **argv) {
 	std_mean_malloc_time = sqrt(var_mean_malloc_time);
 	std_mean_free_time = sqrt(var_mean_free_time);
 	
-	printf(
+	/*printf(
 	"mean_std %s= {\n"
 			"\tmean_frag = %LF %LF\n"
 			"\tmax_frag = %LF %LF\n"
 			"\tmean_meta = %LF %LF\n"
 			"\tmean_malloc_time = %LF %LF\n"
 			"\tmean_free_time = %LF %LF\n"
-	"}\n",argv[1],(1-mean_mean_frag), std_mean_frag,
+	"}\n",argv[2],(1-mean_mean_frag), std_mean_frag,
 	 (1-mean_max_frag), std_max_frag,
 	 mean_mean_meta, std_mean_meta,
 	 mean_mean_malloc_time, std_mean_malloc_time,
-	 mean_mean_free_time, std_mean_free_time);
-		
-	
+	 mean_mean_free_time, std_mean_free_time);*/
+	 
+	switch(argv[1][0]){
+		case'1': 
+			printf("%LF %LF\n",
+			 (1-mean_mean_frag), std_mean_frag);
+			break;
+		case'2': 
+			printf("%LF %LF\n",
+			 (1-mean_max_frag), std_max_frag);
+			break;
+		case'3': 
+			printf("%LF %LF\n",
+			 mean_mean_meta, std_mean_meta);
+			break;
+		case'4': 
+			printf("%LF %LF\n",
+			 mean_mean_malloc_time, std_mean_malloc_time);
+			break;
+		case'5': 
+			printf("%LF %LF\n",
+			 mean_mean_free_time, std_mean_free_time);
+			break;
+		case'6': 
+			printf(
+			"mean_std %s= {\n"
+					"\tmean_frag = %LF %LF\n"
+					"\tmax_frag = %LF %LF\n"
+					"\tmean_meta = %LF %LF\n"
+					"\tmean_malloc_time = %LF %LF\n"
+					"\tmean_free_time = %LF %LF\n"
+			"}\n",argv[2],(1-mean_mean_frag), std_mean_frag,
+			 (1-mean_max_frag), std_max_frag,
+			 mean_mean_meta, std_mean_meta,
+			 mean_mean_malloc_time, std_mean_malloc_time,
+			 mean_mean_free_time, std_mean_free_time);
+			break;
+		default:
+			printf("usage: analyze_data output{1:mean frag; 2: max frag; 3: mean metadata; 4:mean malloc time; 5: mean free time 6: all} [imputfile1] [imputfile2] ...");
+			exit(2);
+			break;
+	}	
 }
